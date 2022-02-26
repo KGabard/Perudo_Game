@@ -1,0 +1,584 @@
+
+@font-face {
+	font-family: 'JapanFont';
+	src: url('Sources/Fonts/Noto_Sans_JP/NotoSansJP-Black.otf');
+}
+
+@font-face {
+	font-family: 'Comforter';
+	src: url('Sources/Fonts/Comforter/Comforter-Regular.ttf');
+}
+
+@font-face {
+	font-family: 'Cardo';
+	src: url('Sources/Fonts/Cardo/Cardo-Regular.ttf');
+}
+
+@font-face {
+	font-family: 'Lora';
+	src: url('Sources/Fonts/Lora/static/Lora-Bold.ttf');
+}
+
+@font-face {
+	font-family: 'Open_Sans_Condensed';
+	src: url('Sources/Fonts/Open_Sans_Condensed/OpenSansCondensed-Light.ttf');
+}
+
+
+:root
+{
+	--headerHeight:75px;
+
+	--darkBlue: rgba(9,48,70,1);
+	--mediumBlue: rgba(10,83,123,1);
+
+	--darkGreen: rgb(7, 34, 9);
+	--mediumGreen: rgb(15, 99, 22);
+	--lightGreen: rgb(10, 153, 22);
+	--plusLightGreen: rgb(2, 230, 21);
+	
+	--darkRed: rgb(66, 14, 14);
+	--mediumRed: rgb(104, 14, 14);
+
+	--gold: rgb(216, 204, 30, 1);
+	
+	/* --darkGreen: rgb(14, 66, 31);
+	--mediumGreen: rgb(20, 105, 48); */
+	
+	--playerBgColor: rgb(30, 30, 30, 0.95);
+	--userBgColor: radial-gradient(circle, var(--mediumGreen) 0%, var(--darkGreen) 100%);
+	--userBigBtnColor: linear-gradient(180deg, var(--mediumRed) 0%, var(--darkRed) 100%);
+	--userBigBtnColor_Click: linear-gradient(0deg, var(--mediumRed) 0%, var(--darkRed) 100%);
+	--userSmallBtnColor: radial-gradient(circle, var(--mediumRed) 0%, var(--darkRed) 100%);
+	--userSmallBtnColor_Click: radial-gradient(circle, var(--mediumRed) 0%, var(--darkRed) 100%);
+	/* --userBgColor: rgba(9, 48, 70, 0.95); */
+	
+	--userPannelWidth : 400px;
+	--bgColor:linear-gradient(180deg, var(--mediumBlue) 0%, var(--lightBlue) 55%);
+	--playerDarkColor :rgb(187, 98, 15);
+	--playerLightColor :rgb(255, 169, 88);
+	--playerMediumColor : rgb(238, 136, 40);
+	--playerPannelBgColor : linear-gradient(90deg, var(--playerDarkColor) 0%, var(--playerDarkColor) 50%, var(--playerMediumColor) 100%);
+	--lightPurple : rgb(255, 122, 248);
+	--mediumPurple : rgb(243, 54, 234);
+	--darkPurple : rgb(184, 0, 174);
+	--lightWhite : rgb(255, 255, 255);
+	--mediumWhite : rgb(241, 241, 241);
+	--firstFont : 'Cardo', Arial, Helvetica, sans-serif;
+	--secondFont : 'Lora', Arial, Helvetica, sans-serif;
+	--thirdFont : 'Open_Sans_Condensed', Arial, Helvetica, sans-serif;
+
+	--playerPannelHeight : 220px;
+
+	--playerBidDiceDimension : 60px;
+}
+
+
+body
+{
+	min-height: 100vh;
+	height: fit-content;
+	background-image: url('Sources/Images/BgImage3.jpg');
+	background-size: 100%;
+	background-repeat: no-repeat;
+	background-position-y: 0%;
+	background-attachment: fixed;
+}
+
+*
+{
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+h1
+{
+	font-family: var(--secondFont);
+	text-transform: uppercase;
+	letter-spacing: 4px;
+	color: white;
+}
+
+/* Header */
+header
+{
+	height: var(--headerHeight);
+	display: flex;
+	background-color: rgb(0,0,0,0.7);
+}
+
+#websiteLogo
+{
+	height: 100%;
+	width: var(--headerHeight);
+}
+
+#navigation
+{
+	margin: auto;
+	width: 80%;
+	display: flex;
+	justify-content: center;
+}
+
+#navigationMenus
+{
+	color: white;
+	list-style: none;
+	display: flex;
+	height: 100%;
+	width: 100%;
+	align-items: center;
+	justify-content: space-around;
+	font-size: 1.5em;
+	font-family: var(--thirdFont);
+	letter-spacing: 1px;
+}
+
+/* Main section */
+#main
+{
+	display: grid;
+	grid-template-columns: minmax(600px,1fr) var(--userPannelWidth);
+	max-width: 1300px;
+	margin: 0 auto;
+	padding: 0 5%
+}
+
+#sectionPannel
+{
+	height: 100%;
+	padding-right: 5%;
+}
+
+
+
+/* Player Pannel */
+.playerPannel
+{
+	margin: 40px auto 0 auto;
+	height: var(--playerPannelHeight);
+	background-color: rgb(30, 30, 30, 0.95);
+	display: grid;
+	grid-template-columns: 1fr 1.5fr 1fr;
+	grid-template-rows: 1fr 1.5fr;
+	border-radius: 50px;
+	border: 2px solid var(--lightWhite);
+	box-shadow: 0 0 8px var(--mediumWhite);
+}
+
+.playerPannel:hover,
+.playerPannel:hover .playerImage img
+{
+	border: 2px solid var(--plusLightGreen);
+	transition: 0.5s;
+	filter: drop-shadow(0px 0px 6px var(--lightGreen));
+}
+
+.playerImage
+{
+	grid-row: span 2;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.playerImage img
+{
+	width: 80%;
+	height: auto;
+	border-radius: 50%;
+	margin: 0 auto;
+	border: 2px solid var(--lightWhite);
+	box-shadow: 0 0 5px var(--mediumWhite);
+}
+
+
+.playerName
+{
+	text-shadow: 2px 2px 3px var(--mediumWhite);
+	display: flex;
+	width: 100%;
+	height: 100%;
+	justify-content: center;
+	align-items: center;
+	margin: 0;
+	padding-top: 20px;
+}
+
+.playerDices
+{
+	display: flex;
+	list-style: none;
+	gap: 3%;
+	grid-row: 2;
+	grid-column: 2;
+	align-items: center;
+	margin: 0 5% 20px 5%;
+}
+
+.playerDices li
+{
+	flex-basis: 0px;
+	flex-grow: 1;
+	display: flex;
+}
+
+.playerDices li img
+{
+	width: 100%;
+}
+
+.lastBidTitle
+{
+	font-size: 1.2em;text-shadow: 1px 1px 2px var(--mediumWhite);
+	display: flex;
+	width: 100%;
+	height: 100%;
+	justify-content: center;
+	align-items: center;
+	margin: 0;
+	color: white;
+	font-family: var(--firstFont);
+	text-transform: uppercase;
+	padding-top: 20px;
+}
+
+
+.playerBid
+{
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	margin-bottom: 20px;
+	gap: 5%;
+}
+
+.playerBidCount
+{
+	width: var(--playerBidDiceDimension);
+	height: var(--playerBidDiceDimension);
+	color: white;
+	font-family: var(--thirdFont);
+	font-size: 2em;
+	font-weight: bold;
+	border: 3px solid white;
+	border-radius: 15%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	overflow: hidden;
+}
+
+.playerBidDice
+{
+	display: flex;
+	width: var(--playerBidDiceDimension);
+	height: var(--playerBidDiceDimension);
+}
+
+.playerBidDice img
+{
+	width: 100%;
+}
+
+
+
+
+
+
+
+/* User Pannel */
+#userPannelWrapper
+{
+	position: relative;
+}
+
+#userPannel
+{
+	width: var(--userPannelWidth);
+	height: 80vh;
+	min-height: 500px;
+	max-height: 550px;
+	margin-top: 40px;
+	background: var(--userBgColor);
+	display: flex;
+	flex-direction: column;
+	justify-content: space-evenly;
+	border-radius: 20px;
+	border: 2px solid black;
+	box-shadow: 0 0 10px black;
+	position: fixed;
+}
+
+#userPannelTitle
+{
+	background-color: var(--userPannelHeaderColor);
+	display: flex;
+	justify-content: center;
+	font-size: 2.2em;
+	border-radius: 20px 20px 0 0;
+	text-shadow: 2px 2px 3px var(--mediumWhite);
+	position: relative;
+	top: -30px;
+}
+
+#userDices
+{
+	display: flex;
+	list-style: none;
+	margin: 0 25px 0 25px;
+	gap: 14px;
+	position: relative;
+	top: -30px;
+}
+
+#userDices li
+{
+	flex-basis: 0px;
+	flex-grow: 1;
+	display: flex;
+}
+
+#userDices li img
+{
+	width: 100%;
+}
+
+.dice
+{
+	border-radius: 15%;
+	border: 1px solid black;
+	box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.4);
+	box-sizing: border-box;
+}
+
+#userBid
+{
+	display: flex;
+	justify-content: center;
+	gap: 10px;
+}
+
+#userBidCount
+{
+	position: relative;
+}
+
+#userBidCount p
+{
+	border: 3px solid white;
+	width: 3.9rem;
+	height: 3.9rem;
+	border-radius: 0.8rem;
+	font-family: var(--thirdFont);
+	font-size: 2em;
+	color: white;
+	font-weight: bold;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	text-shadow: 3px 3px 3px rgb(0, 0, 0, 1);
+}
+
+#userBidDice
+{
+	width: 16%;
+	display: flex;
+	position: relative;
+}
+
+#userBidDice img
+{
+	width: 100%;
+}
+
+#minusBidCount, #plusBidCount, #minusBidDice, #plusBidDice
+{
+	position: absolute;
+	width: 28px;
+	height: 28px;
+	border-radius: 50%;
+	border: 1px solid var(--gold);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background: var(--userSmallBtnColor);
+	color: white;
+	font-family: var(--thirdFont);
+	font-size: 1.5rem;
+	cursor: pointer;
+}
+
+#minusBidCount img, #plusBidCount img, #minusBidDice img, #plusBidDice img
+{
+	width: 60%;
+}
+
+#minusBidCount
+{
+	bottom: 2px;
+	left: -32px;
+	transform: rotate(90deg);
+}
+
+#plusBidCount
+{
+	top: 2px;
+	left: -32px;
+	transform: rotate(-90deg);
+}
+
+#minusBidDice
+{
+	bottom: -32px;
+	left: 2px;
+	transform: rotate(180deg);
+}
+
+#plusBidDice
+{
+	bottom: -32px;
+	right: 2px;
+	transform: rotate(0deg);
+}
+
+#bidBtn
+{
+	width: 55%;
+	height: 50px;
+	border-radius: 10px;
+	margin: 0 auto 0 auto;
+	background: var(--userBigBtnColor);
+	color: white;
+	font-family: var(--thirdFont);
+	font-size: 1.5em;
+	letter-spacing: 0.1em;
+	border-color: var(--gold);
+	position: relative;
+	top: 15px;
+	cursor: pointer;
+}
+
+#dudoBtn
+{
+	width: 55%;
+	height: 50px;
+	border-radius: 10px;
+	margin: 0 auto 0px auto;
+	background: var(--userBigBtnColor);
+	color: white;
+	font-family: var(--thirdFont);
+	font-size: 1.5em;
+	letter-spacing: 0.1em;
+	border-color: var(--gold);
+	position: relative;
+	top: -10px;
+	cursor: pointer;
+}
+
+#bidBtn:active,
+#dudoBtn:active
+{
+	background: var(--userBigBtnColor_Click);
+}
+
+#minusBidCount:active,
+#plusBidCount:active,
+#minusBidDice:active,
+#plusBidDice:active
+{
+	background: var(--userSmallBtnColor_Click);
+}
+
+
+
+
+@media only screen and (max-width: 1200px)
+{
+	#main
+	{
+		grid-template-columns: 1fr;
+		flex-direction: column;
+		width: 90%;
+		max-width: 900px;
+		padding: 0;
+	}
+
+	#sectionPannel
+	{
+		padding-right: 0%;
+		margin-bottom: calc(20px + 40px + var(--playerPannelHeight));
+	}
+
+	#userPannelWrapper
+	{
+		position: absolute;
+		bottom: calc(20px + var(--playerPannelHeight));
+	}
+	
+	#userPannel
+	{
+		margin: 0px auto 0 auto;
+		min-height: var(--playerPannelHeight);
+		max-height: var(--playerPannelHeight);
+		display: grid;
+		grid-template-columns: 1.5fr 1fr 1fr;
+		grid-template-rows: 1fr 1.5fr;
+		border-radius: 50px;
+
+		width: 90%;
+		max-width: 900px;
+	}
+
+	
+	#userPannelTitle
+	{
+		grid-row: 1;
+		grid-column: 1 / span 3;
+
+		position: unset;
+	}
+
+	#userDices
+	{
+		grid-row: 2;
+		grid-column: 1;
+		position: unset;
+		margin: auto 5% auto 5%;
+		gap: 3%;
+	}
+
+	#userBid
+	{
+		grid-row: 2;
+		grid-column: 2;
+		margin: auto;
+	}
+
+	#bidBtn
+	{
+		grid-row: 2;
+		grid-column: 3;
+		position: unset;
+	}
+
+	#dudoBtn
+	{
+		grid-row: 2;
+		grid-column: 3;
+		top: 50px;
+	}
+
+
+
+}
+
+
+
+
+
+

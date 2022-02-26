@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+	<meta charset="utf-8">   
+	<title>Perudo Game</title>
+	<link rel="stylesheet" type="text/css" href="normalize.css">
+	<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+	
+	<header>
+		<nav id="navigation">
+			<ul id="navigationMenus">
+				<li id="navigationMenu1">Menu 1</li>
+				<li id="navigationMenu2">Menu 2</li>
+				<li id="navigationMenu3">Menu 3</li>
+				<li id="navigationMenu4">Menu 4</li>
+			</ul>
+		</nav>
+	</header>
+
+	<div id="main">
+		<section id="sectionPannel">
+
+			<div id="player1" class="playerPannel">
+				<div class="playerImage"><img src="Sources/Images/Cat.png" alt=""></div>
+				<h1 class="playerName">Player 1</h1>
+				<ul class="playerDices">
+					<li class="playerDice1"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></li>
+					<li class="playerDice2"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></li>
+					<li class="playerDice3"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></li>
+					<li class="playerDice4"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></li>
+					<li class="playerDice5"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></li>
+				</ul>
+				<h2 class="lastBidTitle">Enchère</h2>
+				<div class="playerBid">
+					<p class="playerBidCount">99</p>
+					<div class="playerBidDice"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></div>
+				</div>
+			</div>
+			
+			<div id="player2" class="playerPannel">
+				<div class="playerImage"><img src="Sources/Images/Wolf.png" alt=""></div>
+				<h1 class="playerName">Player 2</h1>
+				<ul class="playerDices">
+					<li class="playerDice1"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></li>
+					<li class="playerDice2"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></li>
+					<li class="playerDice3"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></li>
+					<li class="playerDice4"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></li>
+					<li class="playerDice5"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></li>
+				</ul>
+				<h2 class="lastBidTitle">Enchère</h2>
+				<div class="playerBid">
+					<p class="playerBidCount">je suis 2eme</p>
+					<div class="playerBidDice"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></div>
+				</div>
+			</div>
+			
+			<div id="player3" class="playerPannel">
+				<div class="playerImage"><img src="Sources/Images/Tiger.png" alt=""></div>
+				<h1 class="playerName">Player 3</h1>
+				<ul class="playerDices">
+					<li class="playerDice1"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></li>
+					<li class="playerDice2"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></li>
+					<li class="playerDice3"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></li>
+					<li class="playerDice4"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></li>
+					<li class="playerDice5"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></li>
+				</ul>
+				<h2 class="lastBidTitle">Enchère</h2>
+				<div class="playerBid">
+					<p class="playerBidCount">99</p>
+					<div class="playerBidDice"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></div>
+				</div>
+			</div>
+		</section>
+
+			
+		<aside id="userPannelWrapper">
+			<div id="userPannel">
+				<h1 id="userPannelTitle">Votre Main</h1>
+				<ul id="userDices">
+					<li id="userDice1"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt="user Dice"></li>
+					<li id="userDice2"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt="user Dice"></li>
+					<li id="userDice3"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt="user Dice"></li>
+					<li id="userDice4"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt="user Dice"></li>
+					<li id="userDice5"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt="user Dice"></li>
+				</ul>
+
+				<div id="userBid">
+					<div id="userBidCount">
+						<p></p>
+						<div id="minusBidCount">></div>
+						<div id="plusBidCount">></div>
+					</div>
+					<div id="userBidDice">
+						<img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt="user Dice">
+						<div id="minusBidDice">></div>
+						<div id="plusBidDice">></div>
+					</div>
+				</div>
+
+				<button id="bidBtn">Enchérir</button>
+				<button id="dudoBtn">Dudo</button>
+			</div>
+		</aside>
+
+
+	</div>
+	
+
+	<script src="script.js"></script>
+</body>
+</html>
+
+
+
