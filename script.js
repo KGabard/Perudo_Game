@@ -1,5 +1,5 @@
 const MAX_NUMBER_OF_DICES = 5;
-const NUMBER_OF_PLAYERS = 2;
+const NUMBER_OF_PLAYERS = 4;
 
 const MINUS_BID_COUNT_BTN = document.getElementById('minusBidCount');
 const PLUS_BID_COUNT_BTN = document.getElementById('plusBidCount');
@@ -254,6 +254,7 @@ function changeCurrentPlayer() {
     //! A corriger : trouver comment scroller vers le current player
     // let top = players[currentPlayer].pannelElem.position().top;
     // window.scrollTop(top);
+    players[currentPlayer].pannelElem.scrollIntoView({behavior: "smooth", block: "center"});
 
     updatePlayers();
 }
