@@ -1,3 +1,12 @@
+//TODO : Gérer Palifico
+//TODO : Gérer l'élimination d'un joueur
+//TODO : Gérer la fin d'un partie
+//TODO : Gérer la création d'une nouvelle partie avec le nombre de joueurs et leur nom
+//TODO : Gérer les menus
+//TODO : Gérer une IA pour l'ordinateur
+//TODO : Gérer le responsive sur petit écran
+
+
 const MAX_NUMBER_OF_DICES = 5;
 const NUMBER_OF_PLAYERS = 4;
 
@@ -271,6 +280,7 @@ function makeBid() {
 
 function dudo() {
     //TODO : vérifier si l'ancienne enchère est correct, enlever un dé en fonction
+    //TODO : Donner la main au joueur qui vient de perdre un dé
     let lastPlayer = currentPlayer - 1;
     if(lastPlayer < 0) lastPlayer = NUMBER_OF_PLAYERS - 1;
     if(players[lastPlayer].checkPlayerBidValidity(players) == true) {
