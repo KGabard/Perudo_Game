@@ -1,4 +1,3 @@
-//TODO : Ajouter un bouton "montrer" dans USER PANNEL
 //TODO : Gérer l'élimination d'un joueur
 //TODO : Gérer la fin d'un partie
 //TODO : Gérer la création d'une nouvelle partie avec le nombre de joueurs et leur nom
@@ -17,6 +16,7 @@ const MINUS_BID_DICE_BTN = document.getElementById('minusBidDice');
 const PLUS_BID_DICE_BTN = document.getElementById('plusBidDice');
 const BID_BTN = document.getElementById('bidBtn');
 const DUDO_BTN = document.getElementById('dudoBtn');
+const SHOW_BTN = document.getElementById('showBtn');
 
 const USER_BID_COUNT_ELEM = document.querySelector('#userBidCount > p');
 const USER_BID_DICE_ELEM = document.querySelector("#userBidDice > img");
@@ -93,9 +93,6 @@ class Player {
         this.updatePlayerBidDiceElem();
         this.updatePlayerImage();
         this.updatePlayerHighLight();
-
-        //! A retirer :
-        this.showPlayerDicesElem();
     }
 
     updatePlayerImage() {
@@ -394,11 +391,14 @@ function countTotalPlayersDices() {
 
 
 
-USER_PANNEL.addEventListener('mouseover', function() {
+SHOW_BTN.addEventListener('mousedown', function() {
     user.showPlayerDicesElem();
 });
-USER_PANNEL.addEventListener('mouseout', function() {
-    user.updatePlayerDicesElem();
+SHOW_BTN.addEventListener('click', function() {
+     user.updatePlayerDicesElem();
+});
+SHOW_BTN.addEventListener('mouseout', function() {
+     user.updatePlayerDicesElem();
 });
 
 
@@ -479,10 +479,26 @@ window.addEventListener("keydown", (event) => {
             dudo();
             event.preventDefault();
             break;
+        case "Control":
+            user.showPlayerDicesElem();
+            event.preventDefault();
+            break;
         default:
             console.log(event.key);
             return; 
         }
 });
+
+window.addEventListener("keyup", (event) => {
+	switch (event.key) {
+        case "Control":
+            user.updatePlayerDicesElem();
+            event.preventDefault();
+            break;
+        default:
+            return; 
+        }
+});
+
 
 console.log('hello');
