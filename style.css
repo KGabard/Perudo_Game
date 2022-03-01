@@ -41,6 +41,7 @@
 	--mediumRed: rgb(104, 14, 14);
 
 	--gold: rgb(216, 204, 30, 1);
+	--darkGold: rgb(143, 136, 39);
 	
 	/* --darkGreen: rgb(14, 66, 31);
 	--mediumGreen: rgb(20, 105, 48); */
@@ -83,6 +84,8 @@ body
 	background-repeat: no-repeat;
 	background-position-y: 0%;
 	background-attachment: fixed;
+	display: flex;
+	flex-direction: column;
 }
 
 *
@@ -369,11 +372,77 @@ header
 	box-sizing: border-box;
 }
 
+#palificoSign
+{
+	display: none;
+	align-items: center;
+	flex-direction: column;
+	position: absolute;
+	top : 0px;
+	left: 30px;
+}
+
+.letter
+{
+	color: var(--darkGold);
+	font-family: var(--firstFont);
+	font-size: 1.5em;
+	animation: neon 1.2s linear infinite;
+}
+@keyframes neon
+{
+	0% {
+		color: var(--gold);
+		text-shadow: 0 0 8px var(--gold);
+	}
+	90% {
+		color: var(--darkGold);
+	}
+	100% {
+		color: var(--gold);
+	}
+}
+
+.letter:nth-child(1)
+{
+	animation-delay: 0.1s;
+}
+.letter:nth-child(2)
+{
+	animation-delay: 0.2s;
+}
+.letter:nth-child(3)
+{
+	animation-delay: 0.3s;
+}
+.letter:nth-child(4)
+{
+	animation-delay: 0.4s;
+}
+.letter:nth-child(5)
+{
+	animation-delay: 0.5s;
+}
+.letter:nth-child(6)
+{
+	animation-delay: 0.6s;
+}
+.letter:nth-child(7)
+{
+	animation-delay: 0.7s;
+}
+.letter:nth-child(8)
+{
+	animation-delay: 0.8s;
+}
+
+
 #userBid
 {
 	display: flex;
 	justify-content: center;
 	gap: 10px;
+	position: relative;
 }
 
 #userBidCount
@@ -515,7 +584,7 @@ footer
 	display: flex;
 	justify-content: end;
 	background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.5) 25%, rgba(0,0,0,1) 100%);
-	margin-top: 40px;
+	margin-top: auto;
 }
 
 footer p

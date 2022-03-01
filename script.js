@@ -1,14 +1,15 @@
-//TODO : Gérer Palifico
+//TODO : Ajouter un bouton "montrer" dans USER PANNEL
 //TODO : Gérer l'élimination d'un joueur
 //TODO : Gérer la fin d'un partie
 //TODO : Gérer la création d'une nouvelle partie avec le nombre de joueurs et leur nom
-//TODO : Gérer les menus
+//TODO : Gérer les menus (Partie-> nouvelle partie, sauvegarder, charger)
 //TODO : Gérer une IA pour l'ordinateur
 //TODO : Gérer le responsive sur petit écran
+//TODO : Ajouter une ambiance sonore ? "Hang Drum Music for Focus with Binaural Beats, Focus Music, Handpan Study Music"
 
 
 const MAX_NUMBER_OF_DICES = 5;
-const NUMBER_OF_PLAYERS = 4;
+const NUMBER_OF_PLAYERS = 2;
 
 const MINUS_BID_COUNT_BTN = document.getElementById('minusBidCount');
 const PLUS_BID_COUNT_BTN = document.getElementById('plusBidCount');
@@ -21,10 +22,12 @@ const USER_BID_COUNT_ELEM = document.querySelector('#userBidCount > p');
 const USER_BID_DICE_ELEM = document.querySelector("#userBidDice > img");
 const USER_DICES_ELEM = document.getElementById("userDices");
 const USER_PANNEL = document.querySelector('#userPannel');
+const PALIFICO_SIGN = document.querySelector('#palificoSign');
 
 const MAIN_SECTION_PANNEL = document.getElementById('sectionPannel');
 
 let currentPlayer = 1;
+let isPalifico = false;
 
 MAIN_SECTION_PANNEL.innerHTML = '';
 for(let nPlayer = 0; nPlayer < NUMBER_OF_PLAYERS; nPlayer++){
@@ -168,34 +171,88 @@ class Player {
     }
 
     checkBidValidityAgainst(player) {
-        if(isNaN(this.bidCount) || isNaN(this.bidDice)) return false;
-        if(this.bidCount > totalPlayersDices) return false;
+        if(isNaN(this.bidCount) || isNaN(this.bidDice)) {
+            alert("Enchère invalide : Votre enchère est incomplète !");
+            return false;
+        }
+        if(this.bidCount > totalPlayersDices) {
+            alert("Enchère invalide : Vous avez parié sur un nombre de dés plus élevé que le total présent sur la table !");
+            return false;
+        }
         if(isNaN(player.bidCount) || isNaN(player.bidDice)) return true;
-        if(player.bidDice !== 1 && this.bidDice !== 1 && this.bidCount == player.bidCount && this.bidDice > player.bidDice) return true;
-        if(player.bidDice !== 1 && this.bidDice !== 1 && this.bidCount > player.bidCount && this.bidDice == player.bidDice) return true;
-        if(player.bidDice !== 1 && this.bidDice == 1 && this.bidCount >= Math.ceil((player.bidCount) / 2)) return true;
-        if(player.bidDice == 1 && this.bidDice !== 1 && this.bidCount > player.bidCount * 2) return true;
-        if(player.bidDice == 1 && this.bidDice == 1 && this.bidCount > player.bidCount) return true;
-        alert('Enchère invalide !');
+
+        if(player.bidDice !== 1
+            && this.bidDice !== 1
+            && this.bidCount === player.bidCount
+            && this.bidDice > player.bidDice
+            && !isPalifico)
+            return true;
+
+        if(player.bidDice !== 1
+            && this.bidDice !== 1
+            && this.bidCount > player.bidCount
+            && this.bidDice === player.bidDice)
+            return true;
+
+        if(player.bidDice !== 1
+            && this.bidDice === 1
+            && this.bidCount >= Math.ceil((player.bidCount) / 2)
+            && !isPalifico)
+            return true;
+
+        if(player.bidDice === 1
+            && this.bidDice !== 1
+            && this.bidCount > player.bidCount * 2
+            && !isPalifico)
+            return true;
+
+        if(player.bidDice === 1
+            && this.bidDice === 1
+            && this.bidCount > player.bidCount)
+            return true;
+
+
+        if(this.bidCount === player.bidCount
+            && this.bidDice === player.bidDice)
+            alert("Enchère invalide : L'enchère ne peut être la même que la précédente !");
+        else if(isPalifico
+            && this.bidDice !== player.bidDice)
+            alert("Enchère invalide : En situtation de Palifico la valeur du dé doit être la même que celle de l'enchère précédente !");
+        else if(player.bidDice !== 1
+            && this.bidDice === 1
+            && this.bidCount < Math.ceil((player.bidCount) / 2))
+            alert("Enchère invalide : Le nombre de Paco doit être au moins égale à la moitié de l'enchère précédente");
+        else if(player.bidDice === 1
+            && this.bidDice !== 1
+            && this.bidCount <= player.bidCount * 2)
+            alert("Enchère invalide :  Si l'enchère précédente porte sur des Paco le nombre de dés doit être au moins égale au double plus 1");
+        else if(this.bidDice < player.bidDice)
+            alert("Enchère invalide : La valeur du dé ne peut être inférieure à celle de l'enchère précédente !");
+        else if(this.bidCount < player.bidCount)
+            alert("Enchère invalide : Le nombre de dés ne peut être inférieur à celui de l'enchère précédente !");
+        else if(this.bidCount !== player.bidCount
+            && this.bidDice !== player.bidDice)
+            alert("Enchère invalide : Vous ne pouvez faire évoluer que le nombre de dés ou la valeur du dé, pas les deux en même temps !");
+        else alert("Enchère invalide !")
         return false;
     }
     
     checkPlayerBidValidity(players) {
         if(this.bidDice === 1) {
-            if(this.bidCount <= this.countTotalDices(1, players)) return true;
+            if(this.bidCount <= this.countTotalDicesByValue(1, players)) return true;
         }else {
-            if(this.bidCount <= this.countTotalDices(1, players) + this.countTotalDices(this.bidDice, players)) return true;
+            if(this.bidCount <= this.countTotalDicesByValue(1, players) + this.countTotalDicesByValue(this.bidDice, players)) return true;
         }
         return false;
     }
 
-    countTotalDices(diceValue, players) {
+    countTotalDicesByValue(diceValue, players) {
         let diceNumber = 0;
-        for(let player of players) {diceNumber += this.countDicesInPlayerHand(diceValue, player);}
+        for(let player of players) {diceNumber += this.countDicesInPlayerHandByValue(diceValue, player);}
         return diceNumber;
     }
 
-    countDicesInPlayerHand(diceValue, player) {
+    countDicesInPlayerHandByValue(diceValue, player) {
         let diceNumber = 0;
         for(let dice of player.dices) {if(dice === diceValue) diceNumber++;}
         return diceNumber;
@@ -237,6 +294,16 @@ function resetPlayers() {
 
 
 function updatePlayers() {
+    isPalifico = false;
+    for(let player of players){
+        if(player.dices.length === 1) isPalifico = true;
+        player.isHighLighted = false;
+    }
+    players[currentPlayer].isHighLighted = true;
+    
+    if(isPalifico) PALIFICO_SIGN.style.display = 'flex';
+    else PALIFICO_SIGN.style.display = 'none';
+
     user.updatePlayerElem();
     for(let player of players){
         player.updatePlayerElem();
@@ -253,16 +320,10 @@ function initializeGame() {
 }
 
 function changeCurrentPlayer() {
-    players[currentPlayer].isHighLighted = false;
     currentPlayer++;
     if(currentPlayer > NUMBER_OF_PLAYERS - 1) currentPlayer = 0;
-    players[currentPlayer].isHighLighted = true;
     setPlayerAttributeToUser(players[currentPlayer]);
     setUserAttributeToPlayer(players[currentPlayer]);
-
-    //! A corriger : trouver comment scroller vers le current player
-    // let top = players[currentPlayer].pannelElem.position().top;
-    // window.scrollTop(top);
     players[currentPlayer].pannelElem.scrollIntoView({behavior: "smooth", block: "center"});
 
     updatePlayers();
@@ -271,16 +332,16 @@ function changeCurrentPlayer() {
 
 
 function makeBid() {
-    //TODO : vérifier si on peut faire l'enchère par rapport à l'ancienne enchère sinon mettre en message d'avertissement
-
     let lastPlayer = currentPlayer - 1;
     if(lastPlayer < 0) lastPlayer = NUMBER_OF_PLAYERS - 1;
     if(players[currentPlayer].checkBidValidityAgainst(players[lastPlayer])) changeCurrentPlayer();
 }
 
 function dudo() {
-    //TODO : vérifier si l'ancienne enchère est correct, enlever un dé en fonction
-    //TODO : Donner la main au joueur qui vient de perdre un dé
+    if(isNaN(players[currentPlayer].bidCount) || isNaN(players[currentPlayer].bidDice)) {
+        alert("Dudo impossible : L'enchère en cours est incomplète !");
+        return;
+    }
     let lastPlayer = currentPlayer - 1;
     if(lastPlayer < 0) lastPlayer = NUMBER_OF_PLAYERS - 1;
     if(players[lastPlayer].checkPlayerBidValidity(players) == true) {
@@ -289,6 +350,7 @@ function dudo() {
     }else if(players[lastPlayer].checkPlayerBidValidity(players) == false) {
         alert("l'enchère n'est pas valide, le joueur qui a fait l'enchère perd un dé ! Les dés sont à nouveau mélangés.");
         players[lastPlayer].dices.pop();
+        currentPlayer = lastPlayer;
     }
     resetPlayers();
 }
