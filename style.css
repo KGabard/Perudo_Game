@@ -50,6 +50,8 @@
 	--userBgColor: radial-gradient(circle, var(--mediumGreen) 0%, var(--darkGreen) 100%);
 	--userBigBtnColor: linear-gradient(180deg, var(--mediumRed) 0%, var(--darkRed) 100%);
 	--userBigBtnColor_Click: linear-gradient(0deg, var(--mediumRed) 0%, var(--darkRed) 100%);
+	--userShowBtnColor: linear-gradient(180deg, var(--lightWhite) 0%, var(--darkWhite) 100%);
+	--userShowBtnColor_Click: linear-gradient(0deg, var(--lightWhite) 0%, var(--darkWhite) 100%);
 	--userSmallBtnColor: radial-gradient(circle, var(--mediumRed) 0%, var(--darkRed) 100%);
 	--userSmallBtnColor_Click: radial-gradient(circle, var(--mediumRed) 0%, var(--darkRed) 100%);
 	/* --userBgColor: rgba(9, 48, 70, 0.95); */
@@ -65,6 +67,7 @@
 	--darkPurple : rgb(184, 0, 174);
 	--lightWhite : rgb(255, 255, 255);
 	--mediumWhite : rgb(241, 241, 241);
+	--darkWhite : rgb(200, 200, 200);
 	--firstFont : 'Cardo', Arial, Helvetica, sans-serif;
 	--secondFont : 'Lora', Arial, Helvetica, sans-serif;
 	--thirdFont : 'Open_Sans_Condensed', Arial, Helvetica, sans-serif;
@@ -387,6 +390,20 @@ header
 	border-color: white;
 	color: white;
 	cursor: pointer;
+	transition: 0.5s;
+}
+
+#showBtn:hover
+{
+	background: var(--userShowBtnColor);
+	color: var(--darkGreen);
+	font-weight: bold;
+	transition: 0.5s;
+}
+
+#showBtn:active
+{
+	background: var(--userShowBtnColor_Click);
 }
 
 

@@ -8,7 +8,7 @@
 
 
 const MAX_NUMBER_OF_DICES = 5;
-const NUMBER_OF_PLAYERS = 2;
+const NUMBER_OF_PLAYERS = 4;
 
 const MINUS_BID_COUNT_BTN = document.getElementById('minusBidCount');
 const PLUS_BID_COUNT_BTN = document.getElementById('plusBidCount');
@@ -58,6 +58,7 @@ let PLAYER_IMAGE_ELEMS = [];
 let PLAYER_PANNELS = [];
 
 let players = [];
+let eliminatedPlayers = [];
 let user;
 
 let totalPlayersDices = 0;
@@ -74,17 +75,18 @@ for(let nPlayer = 0; nPlayer < NUMBER_OF_PLAYERS; nPlayer++) {
 
 
 class Player {
-    constructor(dices = [], bidCount, bidDice, imageIndex, isHighLighted, dicesElem, bidCountElem, bidDiceElem, imageElem, pannelElem) {
-        this.dices = dices;
-        this.bidCount = bidCount;
-        this.bidDice = bidDice;
+    constructor(imageIndex, dicesElem, bidCountElem, bidDiceElem, imageElem, pannelElem) {
+        this.dices = [0, 0, 0, 0, 0];
+        this.bidCount = undefined;
+        this.bidDice = undefined;
         this.imageIndex = imageIndex;
         this.dicesElem = dicesElem;
         this.bidCountElem = bidCountElem;
         this.bidDiceElem = bidDiceElem;
         this.imageElem = imageElem;
         this.pannelElem = pannelElem;
-        this.isHighLighted = isHighLighted;
+        this.isHighLighted = false;
+        this.isEliminated = false;
     }
     
     updatePlayerElem() {
@@ -93,6 +95,7 @@ class Player {
         this.updatePlayerBidDiceElem();
         this.updatePlayerImage();
         this.updatePlayerHighLight();
+        this.updatePlayerEliminated();
     }
 
     updatePlayerImage() {
@@ -154,6 +157,9 @@ class Player {
     }
 
     updatePlayerHighLight() {
+        if(this.pannelElem === undefined) return;
+        if(this.imageElem === undefined) return;
+
         if(this.isHighLighted) {
             this.pannelElem.style.border = '2px solid var(--plusLightGreen)';
             this.imageElem.style.border = '2px solid var(--plusLightGreen)';
@@ -165,6 +171,11 @@ class Player {
             this.pannelElem.style.filter = 'drop-shadow(0px 0px 0px rgb(0,0,0,0))';
             this.imageElem.style.filter = 'drop-shadow(0px 0px 0px rgb(0,0,0,0))';
         }
+    }
+
+    updatePlayerEliminated() {
+        if(this.pannelElem === undefined) return;
+        if(this.isEliminated) this.pannelElem.style.display = 'none';
     }
 
     checkBidValidityAgainst(player) {
@@ -262,9 +273,9 @@ class Player {
 
 
 function initializePlayers() {
-    user = new Player([0, 0, 0, 0, 0], 0, 0, undefined, undefined, USER_DICES_ELEM, USER_BID_COUNT_ELEM, USER_BID_DICE_ELEM, undefined, USER_PANNEL);
+    user = new Player(undefined, USER_DICES_ELEM, USER_BID_COUNT_ELEM, USER_BID_DICE_ELEM, undefined, USER_PANNEL);
     for(let nPlayer = 0; nPlayer < NUMBER_OF_PLAYERS; nPlayer++) {
-        players.push(new Player([0, 0, 0, 0, 0], undefined, undefined, nPlayer + 1, false,PLAYER_DICES_ELEMS[nPlayer], PLAYER_BID_COUNT_ELEMS[nPlayer], PLAYER_BID_DICE_ELEMS[nPlayer], PLAYER_IMAGE_ELEMS[nPlayer], PLAYER_PANNELS[nPlayer]));
+        players.push(new Player(nPlayer + 1, PLAYER_DICES_ELEMS[nPlayer], PLAYER_BID_COUNT_ELEMS[nPlayer], PLAYER_BID_DICE_ELEMS[nPlayer], PLAYER_IMAGE_ELEMS[nPlayer], PLAYER_PANNELS[nPlayer]));
     }
     randomizePlayersDices();
 }
@@ -290,11 +301,21 @@ function resetPlayers() {
 }
 
 
+//! A Débugger
+function eliminatePlayer(playerIndex) {
+    players[playerIndex].isEliminated = true;
+    players[playerIndex].updatePlayerElem();
+    eliminatedPlayers.push(players[playerIndex]);
+    players.splice(playerIndex,1);
+}
+
+
 function updatePlayers() {
     isPalifico = false;
-    for(let player of players){
-        if(player.dices.length === 1) isPalifico = true;
-        player.isHighLighted = false;
+    for(let playerIndex = 0; playerIndex < players.length; playerIndex++){
+        if(players[playerIndex].dices.length === 1) isPalifico = true;
+        players[playerIndex].isHighLighted = false;
+        if(players[playerIndex].dices.length === 0 && !players[playerIndex].isEliminated) eliminatePlayer(playerIndex);
     }
     players[currentPlayer].isHighLighted = true;
     
@@ -311,14 +332,13 @@ function updatePlayers() {
 function initializeGame() {
     initializePlayers();
     currentPlayer = 0;
-    players[currentPlayer].isHighLighted = true;
     setPlayerAttributeToUser(players[currentPlayer]);
     updatePlayers();
 }
 
 function changeCurrentPlayer() {
     currentPlayer++;
-    if(currentPlayer > NUMBER_OF_PLAYERS - 1) currentPlayer = 0;
+    if(currentPlayer > players.length - 1) currentPlayer = 0;
     setPlayerAttributeToUser(players[currentPlayer]);
     setUserAttributeToPlayer(players[currentPlayer]);
     players[currentPlayer].pannelElem.scrollIntoView({behavior: "smooth", block: "center"});
@@ -330,7 +350,7 @@ function changeCurrentPlayer() {
 
 function makeBid() {
     let lastPlayer = currentPlayer - 1;
-    if(lastPlayer < 0) lastPlayer = NUMBER_OF_PLAYERS - 1;
+    if(lastPlayer < 0) lastPlayer = players.length - 1;
     if(players[currentPlayer].checkBidValidityAgainst(players[lastPlayer])) changeCurrentPlayer();
 }
 
@@ -340,7 +360,7 @@ function dudo() {
         return;
     }
     let lastPlayer = currentPlayer - 1;
-    if(lastPlayer < 0) lastPlayer = NUMBER_OF_PLAYERS - 1;
+    if(lastPlayer < 0) lastPlayer = players.length - 1;
     if(players[lastPlayer].checkPlayerBidValidity(players) == true) {
         alert("L'enchère est valide, le joueur qui a douté perd un dé ! Les dés sont à nouveau mélangés.");
         players[currentPlayer].dices.pop();
@@ -401,15 +421,6 @@ SHOW_BTN.addEventListener('mouseout', function() {
      user.updatePlayerDicesElem();
 });
 
-
-// for(let nPlayer = 0; nPlayer < NUMBER_OF_PLAYERS; nPlayer++) {
-//     PLAYER_PANNELS[nPlayer].addEventListener('mouseover', function() {
-//         players[nPlayer].showPlayerDicesElem();
-//     });
-//     PLAYER_PANNELS[nPlayer].addEventListener('mouseout', function() {
-//         players[nPlayer].updatePlayerDicesElem();
-//     });
-// }
 
 
 
@@ -481,6 +492,9 @@ window.addEventListener("keydown", (event) => {
             break;
         case "Control":
             user.showPlayerDicesElem();
+            SHOW_BTN.style.background = 'var(--userShowBtnColor_Click)';
+            SHOW_BTN.style.color = 'var(--darkGreen)';
+	        SHOW_BTN.style.fontWeight = 'bold';
             event.preventDefault();
             break;
         default:
@@ -493,6 +507,10 @@ window.addEventListener("keyup", (event) => {
 	switch (event.key) {
         case "Control":
             user.updatePlayerDicesElem();
+            SHOW_BTN.style.background='transparent';
+            SHOW_BTN.style.color = 'white';
+	        SHOW_BTN.style.fontWeight = 'normal';
+            //! Pourquoi le #showBtn:hover ne fonctionne plus après ça ?
             event.preventDefault();
             break;
         default:
