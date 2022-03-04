@@ -1,6 +1,4 @@
-//TODO : Gérer l'élimination d'un joueur
-//TODO : Gérer la fin d'un partie
-//TODO : Gérer la création d'une nouvelle partie avec le nombre de joueurs et leur nom
+//TODO : Améliorer l'aspect graphique des messages d'alert
 //TODO : Gérer les menus (Partie-> nouvelle partie, sauvegarder, charger)
 //TODO : Gérer une IA pour l'ordinateur
 //TODO : Gérer le responsive sur petit écran
@@ -8,7 +6,7 @@
 
 
 const MAX_NUMBER_OF_DICES = 5;
-const NUMBER_OF_PLAYERS = 4;
+let START_PLAYERS = [['Cecile', 6], ['Kevin', 1]] //, ['Zora', 3]];
 
 const MINUS_BID_COUNT_BTN = document.getElementById('minusBidCount');
 const PLUS_BID_COUNT_BTN = document.getElementById('plusBidCount');
@@ -28,33 +26,15 @@ const MAIN_SECTION_PANNEL = document.getElementById('sectionPannel');
 
 let currentPlayer = 1;
 let isPalifico = false;
+let isGameInProgress = false;
 
-MAIN_SECTION_PANNEL.innerHTML = '';
-for(let nPlayer = 0; nPlayer < NUMBER_OF_PLAYERS; nPlayer++){
-    MAIN_SECTION_PANNEL.innerHTML = MAIN_SECTION_PANNEL.innerHTML + 
-    `<div id="player${nPlayer + 1}" class="playerPannel">` +
-        `<div class="playerImage"><img src="Sources/Images/QuestionMark.png" alt=""></div>` +
-        `<h1 class="playerName">Player ${nPlayer + 1}</h1>` +
-        `<ul class="playerDices">` +
-            `<li class="playerDice1"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></li>` +
-            `<li class="playerDice2"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></li>` +
-            `<li class="playerDice3"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></li>` +
-            `<li class="playerDice4"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></li>` +
-            `<li class="playerDice5"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></li>` +
-        `</ul>` +
-        `<h2 class="lastBidTitle">Enchère</h2>` +
-        `<div class="playerBid">` +
-            `<p class="playerBidCount"></p>` +
-            `<div class="playerBidDice"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></div>` +
-        `</div>` +
-    `</div>`;
-}
 
 
 let PLAYER_BID_COUNT_ELEMS = [];
 let PLAYER_BID_DICE_ELEMS = [];
 let PLAYER_DICES_ELEMS = [];
 let PLAYER_IMAGE_ELEMS = [];
+let PLAYER_NAME_ELEMS = [];
 let PLAYER_PANNELS = [];
 
 let players = [];
@@ -63,26 +43,19 @@ let user;
 
 let totalPlayersDices = 0;
 
-for(let nPlayer = 0; nPlayer < NUMBER_OF_PLAYERS; nPlayer++) {
-    PLAYER_BID_COUNT_ELEMS.push(document.querySelector(`#player${nPlayer + 1} > div.playerBid > p.playerBidCount`));
-    PLAYER_BID_DICE_ELEMS.push(document.querySelector(`#player${nPlayer + 1} > div.playerBid > div.playerBidDice > img`));
-    PLAYER_DICES_ELEMS.push(document.querySelector(`#player${nPlayer + 1} > ul.playerDices`));
-    PLAYER_IMAGE_ELEMS.push(document.querySelector(`#player${nPlayer + 1} > div.playerImage > img`));
-    PLAYER_PANNELS.push(document.querySelector(`#player${nPlayer + 1}`));
-}
-
-
 
 
 class Player {
-    constructor(imageIndex, dicesElem, bidCountElem, bidDiceElem, imageElem, pannelElem) {
+    constructor(name, imageIndex, dicesElem, bidCountElem, bidDiceElem, nameElem, imageElem, pannelElem) {
         this.dices = [0, 0, 0, 0, 0];
         this.bidCount = undefined;
         this.bidDice = undefined;
+        this.name = name;
         this.imageIndex = imageIndex;
         this.dicesElem = dicesElem;
         this.bidCountElem = bidCountElem;
         this.bidDiceElem = bidDiceElem;
+        this.nameElem = nameElem;
         this.imageElem = imageElem;
         this.pannelElem = pannelElem;
         this.isHighLighted = false;
@@ -93,9 +66,15 @@ class Player {
         this.updatePlayerDicesElem();
         this.updatePlayerBidCountElem();
         this.updatePlayerBidDiceElem();
+        this.updatePlayerName();
         this.updatePlayerImage();
         this.updatePlayerHighLight();
         this.updatePlayerEliminated();
+    }
+
+    updatePlayerName() {
+        if(this.name === undefined) return;
+        this.nameElem.innerHTML = this.name;
     }
 
     updatePlayerImage() {
@@ -245,24 +224,18 @@ class Player {
         return false;
     }
     
-    checkPlayerBidValidity(players) {
-        if(this.bidDice === 1) {
-            if(this.bidCount <= this.countTotalDicesByValue(1, players)) return true;
+    checkPlayerBidValidity() {
+        if(this.bidDice === 1 || isPalifico) {
+            if(this.bidCount <= countTotalDicesByValue(this.bidDice)) return true;
         }else {
-            if(this.bidCount <= this.countTotalDicesByValue(1, players) + this.countTotalDicesByValue(this.bidDice, players)) return true;
+            if(this.bidCount <= countTotalDicesByValue(1) + countTotalDicesByValue(this.bidDice)) return true;
         }
         return false;
     }
 
-    countTotalDicesByValue(diceValue, players) {
+    countDicesInPlayerHandByValue(diceValue) {
         let diceNumber = 0;
-        for(let player of players) {diceNumber += this.countDicesInPlayerHandByValue(diceValue, player);}
-        return diceNumber;
-    }
-
-    countDicesInPlayerHandByValue(diceValue, player) {
-        let diceNumber = 0;
-        for(let dice of player.dices) {if(dice === diceValue) diceNumber++;}
+        for(let dice of this.dices) {if(dice === diceValue) diceNumber++;}
         return diceNumber;
     }
 
@@ -270,14 +243,80 @@ class Player {
 
 
 
+function setPlayerAttributeToUser(player) {
+    user.dices = player.dices;
+}
+
+function setUserAttributeToPlayer(player) {
+    player.bidCount = user.bidCount;
+    player.bidDice = user.bidDice;
+}
+
+function countTotalPlayersDices() {
+    totalPlayersDices = 0;
+    for(let player of players){
+        totalPlayersDices += player.dices.length;
+    }
+}
+
+function countTotalDicesByValue(diceValue) {
+    let diceNumber = 0;
+    for(let player of players) {diceNumber += player.countDicesInPlayerHandByValue(diceValue);}
+    return diceNumber;
+}
 
 
-function initializePlayers() {
-    user = new Player(undefined, USER_DICES_ELEM, USER_BID_COUNT_ELEM, USER_BID_DICE_ELEM, undefined, USER_PANNEL);
-    for(let nPlayer = 0; nPlayer < NUMBER_OF_PLAYERS; nPlayer++) {
-        players.push(new Player(nPlayer + 1, PLAYER_DICES_ELEMS[nPlayer], PLAYER_BID_COUNT_ELEMS[nPlayer], PLAYER_BID_DICE_ELEMS[nPlayer], PLAYER_IMAGE_ELEMS[nPlayer], PLAYER_PANNELS[nPlayer]));
+
+function initializeTable(numberOfPlayers) {
+    MAIN_SECTION_PANNEL.innerHTML = '';
+    for(let nPlayer = 0; nPlayer < numberOfPlayers; nPlayer++){
+        MAIN_SECTION_PANNEL.innerHTML = MAIN_SECTION_PANNEL.innerHTML + 
+        `<div id="player${nPlayer + 1}" class="playerPannel">` +
+            `<div class="playerImage"><img src="Sources/Images/QuestionMark.png" alt=""></div>` +
+            `<h1 class="playerName">Player ${nPlayer + 1}</h1>` +
+            `<ul class="playerDices">` +
+                `<li class="playerDice1"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></li>` +
+                `<li class="playerDice2"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></li>` +
+                `<li class="playerDice3"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></li>` +
+                `<li class="playerDice4"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></li>` +
+                `<li class="playerDice5"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></li>` +
+            `</ul>` +
+            `<h2 class="lastBidTitle">Enchère</h2>` +
+            `<div class="playerBid">` +
+                `<p class="playerBidCount"></p>` +
+                `<div class="playerBidDice"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></div>` +
+            `</div>` +
+        `</div>`;
+    }
+}
+
+function initializePlayerElems(numberOfPlayers) {
+    for(let nPlayer = 0; nPlayer < numberOfPlayers; nPlayer++) {
+        PLAYER_BID_COUNT_ELEMS.push(document.querySelector(`#player${nPlayer + 1} > div.playerBid > p.playerBidCount`));
+        PLAYER_BID_DICE_ELEMS.push(document.querySelector(`#player${nPlayer + 1} > div.playerBid > div.playerBidDice > img`));
+        PLAYER_DICES_ELEMS.push(document.querySelector(`#player${nPlayer + 1} > ul.playerDices`));
+        PLAYER_IMAGE_ELEMS.push(document.querySelector(`#player${nPlayer + 1} > div.playerImage > img`));
+        PLAYER_NAME_ELEMS.push(document.querySelector(`#player${nPlayer + 1} > h1.playerName`));
+        PLAYER_PANNELS.push(document.querySelector(`#player${nPlayer + 1}`));
+    }
+}
+
+function initializePlayers(startPlayers = []) {
+    user = new Player(undefined, undefined, USER_DICES_ELEM, USER_BID_COUNT_ELEM, USER_BID_DICE_ELEM, undefined, undefined, USER_PANNEL);
+    for(let nPlayer = 0; nPlayer < startPlayers.length; nPlayer++) {
+        players.push(new Player(startPlayers[nPlayer][0], startPlayers[nPlayer][1], PLAYER_DICES_ELEMS[nPlayer], PLAYER_BID_COUNT_ELEMS[nPlayer], PLAYER_BID_DICE_ELEMS[nPlayer], PLAYER_NAME_ELEMS[nPlayer], PLAYER_IMAGE_ELEMS[nPlayer], PLAYER_PANNELS[nPlayer]));
     }
     randomizePlayersDices();
+}
+
+function initializeGame(startPlayers = []) {
+    isGameInProgress = true;
+    initializeTable(startPlayers.length);
+    initializePlayerElems(startPlayers.length);
+    initializePlayers(startPlayers);
+    currentPlayer = 0;
+    setPlayerAttributeToUser(players[currentPlayer]);
+    updatePlayers();
 }
 
 function randomizePlayersDices() {
@@ -300,13 +339,56 @@ function resetPlayers() {
     updatePlayers();
 }
 
+function checkBid() {
+    let lastPlayer = currentPlayer - 1;
+    if(lastPlayer < 0) lastPlayer = players.length - 1;
+    let currentBidDice = players[lastPlayer].bidDice;
+    let currentBidDiceCount = countTotalDicesByValue(currentBidDice);
+    let currentPacoDiceCount = countTotalDicesByValue(1);
 
-//! A Débugger
+    let messageBid = `L'enchère en cours annonce : ${players[lastPlayer].bidCount} dés de ${currentBidDice}.`
+
+    if(currentBidDice === 1) {
+        messageBid += `\n\nEn tout il y a ${currentBidDiceCount} Paco.`
+    }else if(isPalifico) {
+        messageBid += `\n\nEn tout il y a ${currentBidDiceCount} dés de ${currentBidDice}. (Palifico : les Paco ne sont pas comptés)`
+    }else {
+        messageBid += `\n\nEn tout il y a ${currentBidDiceCount} dés de ${currentBidDice} et ${currentPacoDiceCount} Paco.`
+        messageBid += `\nSoit ${currentBidDiceCount + currentPacoDiceCount} dés de ${currentBidDice}.`
+    }
+
+    if(players[lastPlayer].checkPlayerBidValidity() === true) {
+        messageBid += `\n\nL'enchère est donc validée !`;
+        messageBid += `\nLe joueur qui a douté perd un dé et les dés sont à nouveau mélangés.`;
+        players[currentPlayer].dices.pop();
+    }else if(players[lastPlayer].checkPlayerBidValidity() === false) {
+        messageBid += `\n\nL'enchère n'est donc pas validée !`;
+        messageBid += `\nLe joueur qui a fait l'enchère perd un dé ! Les dés sont à nouveau mélangés.`;
+        players[lastPlayer].dices.pop();
+        currentPlayer = lastPlayer;
+    }
+
+    alert(messageBid);
+}
+
+
 function eliminatePlayer(playerIndex) {
     players[playerIndex].isEliminated = true;
     players[playerIndex].updatePlayerElem();
     eliminatedPlayers.push(players[playerIndex]);
     players.splice(playerIndex,1);
+}
+
+
+function finishGame() {
+    isGameInProgress = false;
+    let finishMessage = `La partie est finie ! \nLe gagnant est ${players[0].name} !`
+    let place = 2;
+    for(let playerIndex = eliminatedPlayers.length - 1; playerIndex >= 0; playerIndex--) {
+        finishMessage += `\n${place}ème place : ${eliminatedPlayers[playerIndex].name}`;
+        place++;
+    }
+    alert(finishMessage);
 }
 
 
@@ -327,13 +409,11 @@ function updatePlayers() {
         player.updatePlayerElem();
     }
     countTotalPlayersDices();
-}
 
-function initializeGame() {
-    initializePlayers();
-    currentPlayer = 0;
-    setPlayerAttributeToUser(players[currentPlayer]);
-    updatePlayers();
+    if(players.length === 1) {
+        finishGame();
+        return;
+    }
 }
 
 function changeCurrentPlayer() {
@@ -348,36 +428,9 @@ function changeCurrentPlayer() {
 
 
 
-function makeBid() {
-    let lastPlayer = currentPlayer - 1;
-    if(lastPlayer < 0) lastPlayer = players.length - 1;
-    if(players[currentPlayer].checkBidValidityAgainst(players[lastPlayer])) changeCurrentPlayer();
-}
-
-function dudo() {
-    if(isNaN(players[currentPlayer].bidCount) || isNaN(players[currentPlayer].bidDice)) {
-        alert("Dudo impossible : L'enchère en cours est incomplète !");
-        return;
-    }
-    let lastPlayer = currentPlayer - 1;
-    if(lastPlayer < 0) lastPlayer = players.length - 1;
-    if(players[lastPlayer].checkPlayerBidValidity(players) == true) {
-        alert("L'enchère est valide, le joueur qui a douté perd un dé ! Les dés sont à nouveau mélangés.");
-        players[currentPlayer].dices.pop();
-    }else if(players[lastPlayer].checkPlayerBidValidity(players) == false) {
-        alert("l'enchère n'est pas valide, le joueur qui a fait l'enchère perd un dé ! Les dés sont à nouveau mélangés.");
-        players[lastPlayer].dices.pop();
-        currentPlayer = lastPlayer;
-    }
-    resetPlayers();
-}
-
-
 function mainProgram() {
-    initializeGame();
+    initializeGame(START_PLAYERS);
 }
-
-
 
 mainProgram();
 
@@ -385,49 +438,8 @@ mainProgram();
 
 
 
-
-
-
-
-function setPlayerAttributeToUser(player) {
-    user.dices = player.dices;
-    // user.bidCount = player.bidCount;
-    // user.bidDice = player.bidDice;
-    // Pas nécessaire du passer bidDice et bidCount, cela permet de repartir de la dernière enchère.
-}
-
-function setUserAttributeToPlayer(player) {
-    // player.dices = user.dices;
-    player.bidCount = user.bidCount;
-    player.bidDice = user.bidDice;
-}
-
-function countTotalPlayersDices() {
-    totalPlayersDices = 0;
-    for(let player of players){
-        totalPlayersDices += player.dices.length;
-    }
-}
-
-
-
-SHOW_BTN.addEventListener('mousedown', function() {
-    user.showPlayerDicesElem();
-});
-SHOW_BTN.addEventListener('click', function() {
-     user.updatePlayerDicesElem();
-});
-SHOW_BTN.addEventListener('mouseout', function() {
-     user.updatePlayerDicesElem();
-});
-
-
-
-
-
-
-
 function addBidCount() {
+    if(!isGameInProgress) return;
     if(isNaN(user.bidCount)) user.bidCount = 1;
     else if(user.bidCount + 1 <= totalPlayersDices) user.bidCount++;
     setUserAttributeToPlayer(players[currentPlayer]);
@@ -435,6 +447,7 @@ function addBidCount() {
 }
 
 function substractBidCount() {
+    if(!isGameInProgress) return;
     if(isNaN(user.bidCount)) user.bidCount = 1;
     else if(user.bidCount - 1 >= 1) user.bidCount--;
     setUserAttributeToPlayer(players[currentPlayer]);
@@ -442,6 +455,7 @@ function substractBidCount() {
 }
 
 function addBidDice() {
+    if(!isGameInProgress) return;
     if(isNaN(user.bidDice)) user.bidDice = 1;
     else if(user.bidDice + 1 <= 6) user.bidDice++;
     setUserAttributeToPlayer(players[currentPlayer]);
@@ -449,11 +463,46 @@ function addBidDice() {
 }
 
 function substractBidDice() {
+    if(!isGameInProgress) return;
     if(isNaN(user.bidDice)) user.bidDice = 1;
     else if(user.bidDice - 1 >= 1) user.bidDice--;
     setUserAttributeToPlayer(players[currentPlayer]);
     updatePlayers();
 }
+
+function makeBid() {
+    if(!isGameInProgress) return;
+    let lastPlayer = currentPlayer - 1;
+    if(lastPlayer < 0) lastPlayer = players.length - 1;
+    if(players[currentPlayer].checkBidValidityAgainst(players[lastPlayer])) changeCurrentPlayer();
+}
+
+function dudo() {
+    if(!isGameInProgress) return;
+    if(isNaN(players[currentPlayer].bidCount) || isNaN(players[currentPlayer].bidDice)) {
+        alert("Dudo impossible : L'enchère en cours est incomplète !");
+        return;
+    }
+    for(let player of players) {
+        player.showPlayerDicesElem();
+    }
+    checkBid();
+    resetPlayers();
+}
+
+
+SHOW_BTN.addEventListener('mousedown', function() {
+    if(!isGameInProgress) return;
+    user.showPlayerDicesElem();
+});
+SHOW_BTN.addEventListener('click', function() {
+    if(!isGameInProgress) return;
+     user.updatePlayerDicesElem();
+});
+SHOW_BTN.addEventListener('mouseout', function() {
+    if(!isGameInProgress) return;
+     user.updatePlayerDicesElem();
+});
 
 PLUS_BID_COUNT_BTN.addEventListener('click',addBidCount);
 MINUS_BID_COUNT_BTN.addEventListener('click',substractBidCount);
