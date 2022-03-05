@@ -1,8 +1,8 @@
-//TODO : Améliorer l'aspect graphique des messages d'alert
 //TODO : Gérer les menus (Partie-> nouvelle partie, sauvegarder, charger)
-//TODO : Gérer une IA pour l'ordinateur
-//TODO : Gérer le responsive sur petit écran
+//TODO : Faire jouer des joueurs gérés par l'orinateur
+//TODO : Implémenter une IA pour l'ordinateur
 //TODO : Ajouter une ambiance sonore ? "Hang Drum Music for Focus with Binaural Beats, Focus Music, Handpan Study Music"
+//TODO : Gérer le responsive sur petit écran
 
 
 const MAX_NUMBER_OF_DICES = 5;
@@ -19,15 +19,22 @@ const SHOW_BTN = document.getElementById('showBtn');
 const USER_BID_COUNT_ELEM = document.querySelector('#userBidCount > p');
 const USER_BID_DICE_ELEM = document.querySelector("#userBidDice > img");
 const USER_DICES_ELEM = document.getElementById("userDices");
-const USER_PANNEL = document.querySelector('#userPannel');
+const USER_PANEL = document.querySelector('#userPanel');
 const PALIFICO_SIGN = document.querySelector('#palificoSign');
 
-const MAIN_SECTION_PANNEL = document.getElementById('sectionPannel');
+const MESSAGE_TITLE_ELEM = document.getElementById('messagePanelTitle');
+const MESSAGE_TEXT_ELEM = document.getElementById('message');
+const MESSAGE_OK_BTN = document.querySelector("#messagePanel > .okBtn");
+const MESSAGE_PANEL_ELEM = document.getElementById('messagePanel');
+
+const MAIN_SECTION_PANEL = document.getElementById('sectionPanel');
 
 let currentPlayer = 1;
 let isPalifico = false;
-let isGameInProgress = false;
-
+let isGamePause = true;
+let isMessageDisplay = false;
+let hasToResetPlayers = false;
+let messageType = 'normal'
 
 
 let PLAYER_BID_COUNT_ELEMS = [];
@@ -35,7 +42,7 @@ let PLAYER_BID_DICE_ELEMS = [];
 let PLAYER_DICES_ELEMS = [];
 let PLAYER_IMAGE_ELEMS = [];
 let PLAYER_NAME_ELEMS = [];
-let PLAYER_PANNELS = [];
+let PLAYER_PANELS = [];
 
 let players = [];
 let eliminatedPlayers = [];
@@ -46,7 +53,7 @@ let totalPlayersDices = 0;
 
 
 class Player {
-    constructor(name, imageIndex, dicesElem, bidCountElem, bidDiceElem, nameElem, imageElem, pannelElem) {
+    constructor(name, imageIndex, dicesElem, bidCountElem, bidDiceElem, nameElem, imageElem, panelElem) {
         this.dices = [0, 0, 0, 0, 0];
         this.bidCount = undefined;
         this.bidDice = undefined;
@@ -57,7 +64,7 @@ class Player {
         this.bidDiceElem = bidDiceElem;
         this.nameElem = nameElem;
         this.imageElem = imageElem;
-        this.pannelElem = pannelElem;
+        this.panelElem = panelElem;
         this.isHighLighted = false;
         this.isEliminated = false;
     }
@@ -136,34 +143,54 @@ class Player {
     }
 
     updatePlayerHighLight() {
-        if(this.pannelElem === undefined) return;
+        if(this.panelElem === undefined) return;
         if(this.imageElem === undefined) return;
 
         if(this.isHighLighted) {
-            this.pannelElem.style.border = '2px solid var(--plusLightGreen)';
+            this.panelElem.style.border = '2px solid var(--plusLightGreen)';
             this.imageElem.style.border = '2px solid var(--plusLightGreen)';
-            this.pannelElem.style.filter = 'drop-shadow(0px 0px 6px var(--lightGreen))';
+            this.panelElem.style.filter = 'drop-shadow(0px 0px 6px var(--lightGreen))';
             this.imageElem.style.filter = 'drop-shadow(0px 0px 6px var(--lightGreen))';
         }else if(this.isHighLighted == false) {
-            this.pannelElem.style.border = '2px solid var(--lightWhite)';
+            this.panelElem.style.border = '2px solid var(--lightWhite)';
             this.imageElem.style.border = '2px solid var(--lightWhite)';
-            this.pannelElem.style.filter = 'drop-shadow(0px 0px 0px rgb(0,0,0,0))';
+            this.panelElem.style.filter = 'drop-shadow(0px 0px 0px rgb(0,0,0,0))';
             this.imageElem.style.filter = 'drop-shadow(0px 0px 0px rgb(0,0,0,0))';
         }
     }
+    
+    highLightPlayerInRed() {
+        if(this.panelElem === undefined) return;
+        if(this.imageElem === undefined) return;
+
+        this.panelElem.style.border = '2px solid var(--plusLightRed)';
+        this.imageElem.style.border = '2px solid var(--plusLightRed)';
+        this.panelElem.style.filter = 'drop-shadow(0px 0px 6px var(--lightRed))';
+        this.imageElem.style.filter = 'drop-shadow(0px 0px 6px var(--lightRed))';
+    }
+
+    highLightPlayerInWhite() {
+        if(this.panelElem === undefined) return;
+        if(this.imageElem === undefined) return;
+
+        this.panelElem.style.border = '2px solid var(--lightWhite)';
+        this.imageElem.style.border = '2px solid var(--lightWhite)';
+        this.panelElem.style.filter = 'drop-shadow(0px 0px 0px rgb(0,0,0,0))';
+        this.imageElem.style.filter = 'drop-shadow(0px 0px 0px rgb(0,0,0,0))';
+    }
 
     updatePlayerEliminated() {
-        if(this.pannelElem === undefined) return;
-        if(this.isEliminated) this.pannelElem.style.display = 'none';
+        if(this.panelElem === undefined) return;
+        if(this.isEliminated) this.panelElem.style.display = 'none';
     }
 
     checkBidValidityAgainst(player) {
         if(isNaN(this.bidCount) || isNaN(this.bidDice)) {
-            alert("Enchère invalide : Votre enchère est incomplète !");
+            displayMessage('Enchère invalide !', 'Votre enchère est incomplète.', 'error');
             return false;
         }
         if(this.bidCount > totalPlayersDices) {
-            alert("Enchère invalide : Vous avez parié sur un nombre de dés plus élevé que le total présent sur la table !");
+            displayMessage('Enchère invalide !', 'Vous avez parié sur un nombre de dés plus élevé que le total présent sur la table !', 'error');
             return false;
         }
         if(isNaN(player.bidCount) || isNaN(player.bidDice)) return true;
@@ -201,26 +228,26 @@ class Player {
 
         if(this.bidCount === player.bidCount
             && this.bidDice === player.bidDice)
-            alert("Enchère invalide : L'enchère ne peut être la même que la précédente !");
+            displayMessage("Enchère invalide !", "L'enchère ne peut être la même que la précédente !", 'error');
         else if(isPalifico
             && this.bidDice !== player.bidDice)
-            alert("Enchère invalide : En situtation de Palifico la valeur du dé doit être la même que celle de l'enchère précédente !");
+            displayMessage("Enchère invalide !", "En situtation de Palifico la valeur du dé doit être la même que celle de l'enchère précédente !", 'error');
         else if(player.bidDice !== 1
             && this.bidDice === 1
             && this.bidCount < Math.ceil((player.bidCount) / 2))
-            alert("Enchère invalide : Le nombre de Paco doit être au moins égale à la moitié de l'enchère précédente");
+            displayMessage("Enchère invalide !", "Le nombre de Paco doit être au moins égale à la moitié de l'enchère précédente.", 'error');
         else if(player.bidDice === 1
             && this.bidDice !== 1
             && this.bidCount <= player.bidCount * 2)
-            alert("Enchère invalide :  Si l'enchère précédente porte sur des Paco le nombre de dés doit être au moins égale au double plus 1");
+            displayMessage("Enchère invalide !", "Si l'enchère précédente porte sur des Paco le nombre de dés doit être au moins égale au double plus 1.", 'error');
         else if(this.bidDice < player.bidDice)
-            alert("Enchère invalide : La valeur du dé ne peut être inférieure à celle de l'enchère précédente !");
+            displayMessage("Enchère invalide !", "La valeur du dé ne peut être inférieure à celle de l'enchère précédente.", 'error');
         else if(this.bidCount < player.bidCount)
-            alert("Enchère invalide : Le nombre de dés ne peut être inférieur à celui de l'enchère précédente !");
+            displayMessage("Enchère invalide !", "Le nombre de dés ne peut être inférieur à celui de l'enchère précédente.", 'error');
         else if(this.bidCount !== player.bidCount
             && this.bidDice !== player.bidDice)
-            alert("Enchère invalide : Vous ne pouvez faire évoluer que le nombre de dés ou la valeur du dé, pas les deux en même temps !");
-        else alert("Enchère invalide !")
+            displayMessage("Enchère invalide !", "Vous ne pouvez faire évoluer que le nombre de dés ou la valeur du dé, pas les deux en même temps.", 'error');
+        else displayMessage("Enchère invalide !", "Votre enchère est invalide.", 'error');
         return false;
     }
     
@@ -268,10 +295,10 @@ function countTotalDicesByValue(diceValue) {
 
 
 function initializeTable(numberOfPlayers) {
-    MAIN_SECTION_PANNEL.innerHTML = '';
+    MAIN_SECTION_PANEL.innerHTML = '';
     for(let nPlayer = 0; nPlayer < numberOfPlayers; nPlayer++){
-        MAIN_SECTION_PANNEL.innerHTML = MAIN_SECTION_PANNEL.innerHTML + 
-        `<div id="player${nPlayer + 1}" class="playerPannel">` +
+        MAIN_SECTION_PANEL.innerHTML = MAIN_SECTION_PANEL.innerHTML + 
+        `<div id="player${nPlayer + 1}" class="playerPanel">` +
             `<div class="playerImage"><img src="Sources/Images/QuestionMark.png" alt=""></div>` +
             `<h1 class="playerName">Player ${nPlayer + 1}</h1>` +
             `<ul class="playerDices">` +
@@ -297,20 +324,20 @@ function initializePlayerElems(numberOfPlayers) {
         PLAYER_DICES_ELEMS.push(document.querySelector(`#player${nPlayer + 1} > ul.playerDices`));
         PLAYER_IMAGE_ELEMS.push(document.querySelector(`#player${nPlayer + 1} > div.playerImage > img`));
         PLAYER_NAME_ELEMS.push(document.querySelector(`#player${nPlayer + 1} > h1.playerName`));
-        PLAYER_PANNELS.push(document.querySelector(`#player${nPlayer + 1}`));
+        PLAYER_PANELS.push(document.querySelector(`#player${nPlayer + 1}`));
     }
 }
 
 function initializePlayers(startPlayers = []) {
-    user = new Player(undefined, undefined, USER_DICES_ELEM, USER_BID_COUNT_ELEM, USER_BID_DICE_ELEM, undefined, undefined, USER_PANNEL);
+    user = new Player(undefined, undefined, USER_DICES_ELEM, USER_BID_COUNT_ELEM, USER_BID_DICE_ELEM, undefined, undefined, USER_PANEL);
     for(let nPlayer = 0; nPlayer < startPlayers.length; nPlayer++) {
-        players.push(new Player(startPlayers[nPlayer][0], startPlayers[nPlayer][1], PLAYER_DICES_ELEMS[nPlayer], PLAYER_BID_COUNT_ELEMS[nPlayer], PLAYER_BID_DICE_ELEMS[nPlayer], PLAYER_NAME_ELEMS[nPlayer], PLAYER_IMAGE_ELEMS[nPlayer], PLAYER_PANNELS[nPlayer]));
+        players.push(new Player(startPlayers[nPlayer][0], startPlayers[nPlayer][1], PLAYER_DICES_ELEMS[nPlayer], PLAYER_BID_COUNT_ELEMS[nPlayer], PLAYER_BID_DICE_ELEMS[nPlayer], PLAYER_NAME_ELEMS[nPlayer], PLAYER_IMAGE_ELEMS[nPlayer], PLAYER_PANELS[nPlayer]));
     }
     randomizePlayersDices();
 }
 
 function initializeGame(startPlayers = []) {
-    isGameInProgress = true;
+    isGamePause = false;
     initializeTable(startPlayers.length);
     initializePlayerElems(startPlayers.length);
     initializePlayers(startPlayers);
@@ -349,26 +376,34 @@ function checkBid() {
     let messageBid = `L'enchère en cours annonce : ${players[lastPlayer].bidCount} dés de ${currentBidDice}.`
 
     if(currentBidDice === 1) {
-        messageBid += `\n\nEn tout il y a ${currentBidDiceCount} Paco.`
+        messageBid += `<br><br>En tout il y a ${currentBidDiceCount} Paco.`
     }else if(isPalifico) {
-        messageBid += `\n\nEn tout il y a ${currentBidDiceCount} dés de ${currentBidDice}. (Palifico : les Paco ne sont pas comptés)`
+        messageBid += `<br><br>En tout il y a ${currentBidDiceCount} dés de ${currentBidDice}. (Palifico : les Paco ne sont pas comptés)`
     }else {
-        messageBid += `\n\nEn tout il y a ${currentBidDiceCount} dés de ${currentBidDice} et ${currentPacoDiceCount} Paco.`
-        messageBid += `\nSoit ${currentBidDiceCount + currentPacoDiceCount} dés de ${currentBidDice}.`
+        messageBid += `<br><br>En tout il y a ${currentBidDiceCount} dés de ${currentBidDice} et ${currentPacoDiceCount} Paco.`
+        messageBid += `<br>Soit ${currentBidDiceCount + currentPacoDiceCount} dés de ${currentBidDice}.`
     }
 
     if(players[lastPlayer].checkPlayerBidValidity() === true) {
-        messageBid += `\n\nL'enchère est donc validée !`;
-        messageBid += `\nLe joueur qui a douté perd un dé et les dés sont à nouveau mélangés.`;
+        messageBid += `<br><br>L'enchère est donc validée !`;
+        messageBid += `<br>Le joueur qui a douté perd un dé et les dés sont à nouveau mélangés.`;
         players[currentPlayer].dices.pop();
+        for(let player of players) {
+            player.highLightPlayerInWhite();
+        }
+        players[currentPlayer].highLightPlayerInRed();
     }else if(players[lastPlayer].checkPlayerBidValidity() === false) {
-        messageBid += `\n\nL'enchère n'est donc pas validée !`;
-        messageBid += `\nLe joueur qui a fait l'enchère perd un dé ! Les dés sont à nouveau mélangés.`;
+        messageBid += `<br><br>L'enchère n'est donc pas validée !`;
+        messageBid += `<br>Le joueur qui a fait l'enchère perd un dé ! Les dés sont à nouveau mélangés.`;
         players[lastPlayer].dices.pop();
+        for(let player of players) {
+            player.highLightPlayerInWhite();
+        }
+        players[lastPlayer].highLightPlayerInRed();
         currentPlayer = lastPlayer;
     }
 
-    alert(messageBid);
+    displayMessage("Vérification de l'enchère", messageBid, 'normal');
 }
 
 
@@ -377,18 +412,20 @@ function eliminatePlayer(playerIndex) {
     players[playerIndex].updatePlayerElem();
     eliminatedPlayers.push(players[playerIndex]);
     players.splice(playerIndex,1);
+    currentPlayer++;
+    if(currentPlayer >= players.length) currentPlayer = 0;
 }
 
 
 function finishGame() {
-    isGameInProgress = false;
-    let finishMessage = `La partie est finie ! \nLe gagnant est ${players[0].name} !`
+    isGamePause = true;
+    let finishMessage = `La partie est finie ! <br><br>Le gagnant est ${players[0].name} !`
     let place = 2;
     for(let playerIndex = eliminatedPlayers.length - 1; playerIndex >= 0; playerIndex--) {
-        finishMessage += `\n${place}ème place : ${eliminatedPlayers[playerIndex].name}`;
+        finishMessage += `<br>${place}ème place : ${eliminatedPlayers[playerIndex].name}`;
         place++;
     }
-    alert(finishMessage);
+    displayMessage("Fin de partie", finishMessage, 'end');
 }
 
 
@@ -421,9 +458,66 @@ function changeCurrentPlayer() {
     if(currentPlayer > players.length - 1) currentPlayer = 0;
     setPlayerAttributeToUser(players[currentPlayer]);
     setUserAttributeToPlayer(players[currentPlayer]);
-    players[currentPlayer].pannelElem.scrollIntoView({behavior: "smooth", block: "center"});
+    players[currentPlayer].panelElem.scrollIntoView({behavior: "smooth", block: "center"});
 
     updatePlayers();
+}
+
+function displayMessage(title, message, type) {
+    messageType = type;
+    switch (messageType) {
+        case "error":
+            MESSAGE_PANEL_ELEM.style.background = 'var(--errorMessageBgColor)';
+            MESSAGE_PANEL_ELEM.style.animationTimingFunction = "ease-out";
+            MESSAGE_PANEL_ELEM.style.animationDuration = '0.5s';
+            MESSAGE_PANEL_ELEM.style.animationName = 'slideIn';
+            setTimeout(function(){
+                MESSAGE_TITLE_ELEM.innerHTML = title;
+                MESSAGE_TEXT_ELEM.innerHTML = message;
+            }, 0);
+            break;
+        case "normal":
+            MESSAGE_PANEL_ELEM.style.background = 'var(--normalMessageBgColor)';
+            MESSAGE_PANEL_ELEM.style.animationTimingFunction = "ease-out";
+            MESSAGE_PANEL_ELEM.style.animationDuration = '0.5s';
+            MESSAGE_PANEL_ELEM.style.animationName = 'slideIn';
+            setTimeout(function(){
+                MESSAGE_TITLE_ELEM.innerHTML = title;
+                MESSAGE_TEXT_ELEM.innerHTML = message;
+            }, 0);
+            break;
+        case "end":
+            MESSAGE_PANEL_ELEM.style.animationTimingFunction = "ease-in-out";
+            MESSAGE_PANEL_ELEM.style.animationDuration = '1s';
+            MESSAGE_PANEL_ELEM.style.animationName = 'slideOutIn';
+            setTimeout(function(){
+                MESSAGE_PANEL_ELEM.style.background = 'var(--endMessageBgColor)';
+                MESSAGE_TITLE_ELEM.innerHTML = title;
+                MESSAGE_TEXT_ELEM.innerHTML = message;
+            }, 500);
+            break;
+        default:
+            console.log('Type de message non reconnu');
+            return; 
+        }
+    isGamePause = true;
+    isMessageDisplay = true;
+    
+    MESSAGE_PANEL_ELEM.style.left = '0px';
+}
+
+function stopDisplayMessage() {
+    if(!isMessageDisplay) return;
+    if(messageType === 'error' || messageType === 'normal') isGamePause = false;
+    isMessageDisplay = false;
+    MESSAGE_PANEL_ELEM.style.animationTimingFunction = "ease-in";
+    MESSAGE_PANEL_ELEM.style.animationDuration = '0.5s';
+    MESSAGE_PANEL_ELEM.style.animationName = 'slideOut';
+    MESSAGE_PANEL_ELEM.style.left = 'calc(var(--userPanelWidth) + 10px)';
+    if(hasToResetPlayers) {
+        hasToResetPlayers = false;
+        resetPlayers();
+    }
 }
 
 
@@ -437,9 +531,8 @@ mainProgram();
 
 
 
-
 function addBidCount() {
-    if(!isGameInProgress) return;
+    if(isGamePause) return;
     if(isNaN(user.bidCount)) user.bidCount = 1;
     else if(user.bidCount + 1 <= totalPlayersDices) user.bidCount++;
     setUserAttributeToPlayer(players[currentPlayer]);
@@ -447,7 +540,7 @@ function addBidCount() {
 }
 
 function substractBidCount() {
-    if(!isGameInProgress) return;
+    if(isGamePause) return;
     if(isNaN(user.bidCount)) user.bidCount = 1;
     else if(user.bidCount - 1 >= 1) user.bidCount--;
     setUserAttributeToPlayer(players[currentPlayer]);
@@ -455,7 +548,7 @@ function substractBidCount() {
 }
 
 function addBidDice() {
-    if(!isGameInProgress) return;
+    if(isGamePause) return;
     if(isNaN(user.bidDice)) user.bidDice = 1;
     else if(user.bidDice + 1 <= 6) user.bidDice++;
     setUserAttributeToPlayer(players[currentPlayer]);
@@ -463,7 +556,7 @@ function addBidDice() {
 }
 
 function substractBidDice() {
-    if(!isGameInProgress) return;
+    if(isGamePause) return;
     if(isNaN(user.bidDice)) user.bidDice = 1;
     else if(user.bidDice - 1 >= 1) user.bidDice--;
     setUserAttributeToPlayer(players[currentPlayer]);
@@ -471,36 +564,36 @@ function substractBidDice() {
 }
 
 function makeBid() {
-    if(!isGameInProgress) return;
+    if(isGamePause) return;
     let lastPlayer = currentPlayer - 1;
     if(lastPlayer < 0) lastPlayer = players.length - 1;
     if(players[currentPlayer].checkBidValidityAgainst(players[lastPlayer])) changeCurrentPlayer();
 }
 
 function dudo() {
-    if(!isGameInProgress) return;
+    if(isGamePause) return;
     if(isNaN(players[currentPlayer].bidCount) || isNaN(players[currentPlayer].bidDice)) {
-        alert("Dudo impossible : L'enchère en cours est incomplète !");
+        displayMessage("Dudo impossible !", "L'enchère en cours est incomplète.", 'error');
         return;
     }
     for(let player of players) {
         player.showPlayerDicesElem();
     }
+    hasToResetPlayers = true;
     checkBid();
-    resetPlayers();
 }
 
 
 SHOW_BTN.addEventListener('mousedown', function() {
-    if(!isGameInProgress) return;
+    if(isGamePause) return;
     user.showPlayerDicesElem();
 });
 SHOW_BTN.addEventListener('click', function() {
-    if(!isGameInProgress) return;
+    if(isGamePause) return;
      user.updatePlayerDicesElem();
 });
 SHOW_BTN.addEventListener('mouseout', function() {
-    if(!isGameInProgress) return;
+    if(isGamePause) return;
      user.updatePlayerDicesElem();
 });
 
@@ -511,6 +604,8 @@ MINUS_BID_DICE_BTN.addEventListener('click',substractBidDice);
 
 BID_BTN.addEventListener('click',makeBid);
 DUDO_BTN.addEventListener('click',dudo);
+
+MESSAGE_OK_BTN.addEventListener('click',stopDisplayMessage);
 
 
 window.addEventListener("keydown", (event) => {
@@ -532,7 +627,8 @@ window.addEventListener("keydown", (event) => {
             event.preventDefault();
             break;
         case "Enter":
-            makeBid();
+            if(!isGamePause) makeBid();
+            else if(isMessageDisplay) stopDisplayMessage();
             event.preventDefault();
             break;
         case "Shift":
