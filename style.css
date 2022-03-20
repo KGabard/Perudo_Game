@@ -57,6 +57,7 @@
 	/* --darkGreen: rgb(14, 66, 31);
 	--mediumGreen: rgb(20, 105, 48); */
 	
+	--headerBgColor: rgb(0, 0, 0, 0.9);
 	--playerBgColor: rgb(30, 30, 30, 0.95);
 	--userBgColor: radial-gradient(circle, var(--mediumGreen) 0%, var(--darkGreen) 100%);
 	--errorMessageBgColor: radial-gradient(circle, var(--darkRed) 0%, var(--mediumBlack) 100%);
@@ -88,8 +89,20 @@
 	--playerPanelHeight : 220px;
 
 	--playerBidDiceDimension : 60px;
+
+	--panelPositionTop: translate(0%,-100%);
+	--panelPositionBottom: translate(0%,100%);
+	--panelPositionRight: translate(100%,0%);
+	--panelPositionLeft: translate(-100%,0%);
+	--panelPositionCenter: translate(0%,0%);
 }
 
+.enableTextSelection {
+	-webkit-user-select: auto;  
+	-moz-user-select: auto;    
+	-ms-user-select: auto;      
+	user-select: auto;
+}
 
 body
 {
@@ -102,6 +115,10 @@ body
 	background-attachment: fixed;
 	display: flex;
 	flex-direction: column;
+	-webkit-user-select: none;  
+	-moz-user-select: none;    
+	-ms-user-select: none;      
+	user-select: none;
 }
 
 *
@@ -126,7 +143,7 @@ header
 {
 	height: var(--headerHeight);
 	display: flex;
-	background-color: rgb(0,0,0,0.7);
+	background: var(--headerBgColor);
 }
 
 #websiteLogo
@@ -139,8 +156,10 @@ header
 {
 	margin: auto;
 	width: 80%;
+	height: 100%;
 	display: flex;
 	justify-content: center;
+	z-index: 40;
 }
 
 #navigationMenus
@@ -155,20 +174,191 @@ header
 	font-size: 1.5em;
 	font-family: var(--secondFont);
 	letter-spacing: 1px;
+	position: relative;
 }
 
-#navigationMenus li
+#menuLink
 {
 	cursor: pointer;
-	box-sizing:initial;
+	box-sizing: border-box;
 	transition: 0.2s;
 }
 
-#navigationMenus li:hover
+#menuLink:hover
 {
 	border-bottom: 2px solid white;
+	transform: translateY(10px);
 	transition: 0.2s;
 }
+
+#navigationMenus .sliderWrapper
+{
+	overflow: hidden;
+	position: absolute;
+	top: var(--headerHeight);
+	transform: translate(-20%,0%);
+}
+
+#navigationMenus .slider
+{
+	background: var(--headerBgColor);
+	padding: 10px 20px;
+	font-size: 0.9em;
+	border-radius: 0 0 10px 10px;
+	transform: translate(0%,-100%);
+	animation-name: none;
+	animation-duration: 0s;
+	animation-timing-function: ease-out;
+	animation-iteration-count: 1;
+}
+
+@keyframes slideInFromTop {
+	0% {
+		transform: var(--panelPositionTop);
+	}
+	100% {
+		transform: var(--panelPositionCenter);
+	}
+}
+
+@keyframes slideOutToTop {
+	0% {
+		transform: var(--panelPositionCenter);
+	}
+	100% {
+		transform: var(--panelPositionTop);
+	}
+}
+
+@keyframes slideInFromRight {
+	0% {
+		transform: var(--panelPositionRight);
+	}
+	100% {
+		transform: var(--panelPositionCenter);
+	}
+}
+
+@keyframes slideOutToLeft {
+	0% {
+		transform: var(--panelPositionCenter);
+	}
+	100% {
+		transform: var(--panelPositionLeft);
+	}
+}
+
+@keyframes slideInFromLeft {
+	0% {
+		transform: var(--panelPositionLeft);
+	}
+	100% {
+		transform: var(--panelPositionCenter);
+	}
+}
+
+@keyframes slideOutToRight {
+	0% {
+		transform: var(--panelPositionCenter);
+	}
+	100% {
+		transform: var(--panelPositionRight);
+	}
+}
+
+
+
+#navigationMenuControls li
+{
+	list-style: none;
+	display: flex;
+	align-items: center;
+}
+
+#navigationMenuControls img
+{
+	height: 30px;
+	margin: 2px 10px 2px 0;
+}
+
+.gameSubMenu
+{
+	display: none;
+	flex-direction: column;
+	transform: var(--panelPositionRight);
+	gap: 10px;
+}
+
+#newGamePanel p
+{
+	cursor: pointer;
+}
+
+
+#playerNumber
+{
+	width: 2em;
+	border: 2px solid var(--lightWhite);
+	border-radius: 1em;
+	transition: 0.2s;
+	align-self: center;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+#playerNumber:hover
+{
+	width: 3em;
+}
+
+.prevBtn, .nextBtn
+{
+	opacity: 0;
+	transition: 0.2s;
+	height: 100%;
+	cursor: pointer;
+}
+
+.prevBtn
+{
+	transform: scaleX(-1);
+}
+
+#playerNumber:hover .prevBtn
+{
+	opacity: 1;
+	transform: translateX(-0.4em) scaleX(-1);
+}
+
+#playerNumber:hover .nextBtn
+{
+	opacity: 1;
+	transform: translateX(0.4em);
+}
+
+.menuOkBtn
+{
+	width: fit-content;
+	padding: 0 0.4em;
+	align-self: end;
+	border: 2px solid var(--lightWhite);
+	background: transparent;
+	color: var(--lightWhite);
+	border-radius: 0.3em;
+	transition: 0.2s;
+	cursor: pointer;
+}
+
+.menuOkBtn:hover
+{
+	background-color: var(--lightWhite);
+	color: var(--mediumBlack);
+	font-weight: bold;
+	transition: 0.2s;
+}
+
+
 
 /* Main section */
 #main
@@ -325,11 +515,6 @@ header
 
 #userPanel, #messagePanel
 {
-	width: var(--userPanelWidth);
-	height: 80vh;
-	min-height: 500px;
-	max-height: 550px;
-	margin-top: 40px;
 	display: flex;
 	flex-direction: column;
 	border-radius: 20px;
@@ -339,53 +524,20 @@ header
 
 #messagePanel
 {
+	height: 100%;
+	width: 100%;
 	display: flex;
 	flex-direction: column;
 	z-index: 20;
 	background: var(--normalMessageBgColor);
-	position: relative;
+	position: absolute;
 	padding: 0 30px;
 	animation-name: none;
-	animation-duration: 0.5s;
+	animation-duration: 0s;
 	animation-timing-function: ease-out;
 	animation-iteration-count: 1;
-	left: calc(var(--userPanelWidth) + 10px);
-}
-
-@keyframes slideIn
-{
-	0% {
-		left: calc(var(--userPanelWidth) * -1 - 10px);
-	}
-	100% {
-		left: 0px;
-	}
-}
-
-@keyframes slideOut
-{
-	0% {
-		left: 0px;
-	}
-	100% {
-		left: calc(var(--userPanelWidth) + 10px);
-	}
-}
-
-@keyframes slideOutIn
-{
-	0% {
-		left: 0px;
-	}
-	50% {
-		left: calc(var(--userPanelWidth) + 10px);
-	}
-	51% {
-		left: calc(var(--userPanelWidth) * -1 - 10px);
-	}
-	100% {
-		left: 0px;
-	}
+	transform: var(--panelPositionLeft);
+	border: initial;
 }
 
 #messagePanelTitle
@@ -431,15 +583,20 @@ header
 #userPanelWrapper
 {
 	position: relative;
-	overflow: hidden;
 }
 
 #userPanel
 {
 	z-index: 10;
+	width: var(--userPanelWidth);
+	height: 80vh;
+	min-height: 500px;
+	max-height: 550px;
 	justify-content: space-evenly;
 	background: var(--userBgColor);
 	box-shadow: 0 0 10px black;
+	margin-top: 40px;
+	overflow: hidden;
 }
 
 #userPanelTitle

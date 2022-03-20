@@ -1,4 +1,7 @@
-//TODO : Gérer les menus (Partie-> nouvelle partie, sauvegarder, charger)
+//TODO : Lancer une nouvelle partie a l'aide du menu "nouvelle partie"
+//TODO : Implémenter le menu "Règles"
+//TODO : Implémenter le menu "Musique"
+//TODO régler le bug qui fait que le premier joueur à jouer peut faire "dudo" lorsqu'il a une enchère en cours.
 //TODO : Faire jouer des joueurs gérés par l'orinateur
 //TODO : Implémenter une IA pour l'ordinateur
 //TODO : Ajouter une ambiance sonore ? "Hang Drum Music for Focus with Binaural Beats, Focus Music, Handpan Study Music"
@@ -6,7 +9,8 @@
 
 
 const MAX_NUMBER_OF_DICES = 5;
-let START_PLAYERS = [['Cecile', 6], ['Kevin', 1]] //, ['Zora', 3]];
+const MAX_NUMBER_OF_PLAYER = 10;
+let START_PLAYERS = [['Anaïs', 6], ['Kevin', 1], ['Zora', 3]];
 
 const MINUS_BID_COUNT_BTN = document.getElementById('minusBidCount');
 const PLUS_BID_COUNT_BTN = document.getElementById('plusBidCount');
@@ -15,6 +19,60 @@ const PLUS_BID_DICE_BTN = document.getElementById('plusBidDice');
 const BID_BTN = document.getElementById('bidBtn');
 const DUDO_BTN = document.getElementById('dudoBtn');
 const SHOW_BTN = document.getElementById('showBtn');
+
+const MENU_GAME_PANEL = document.querySelector("#navigationMenuGame > .sliderWrapper > .slider");
+const MENU_GAME_LINK = document.querySelector("#navigationMenuGame > p");
+
+MENU_GAME_PANEL.innerHTML = 
+    '<div id="newGamePanel" class="gameSubMenu"><p>Nouvelle Partie ?</p></div>' +
+    '<div id="playerNumberPanel" class="gameSubMenu">' +
+        '<p>Nombre de joueurs ?</p>' +
+        '<p id="playerNumber" class="disableTextSelection">' +
+            '<span class="prevBtn">></span>' +
+            '<span class="number">2</span>' +
+            '<span class="nextBtn">></span>' +
+        '</p>' +
+        
+        '<button class="menuOkBtn">OK</button>' +
+    '</div>'
+for(let playerIndex = 1; playerIndex <= MAX_NUMBER_OF_PLAYER; playerIndex++) {
+    MENU_GAME_PANEL.innerHTML = MENU_GAME_PANEL.innerHTML +
+    `<div id="addPlayerPanel${playerIndex}" class="gameSubMenu">` +
+        `<p>Joueur n°${playerIndex} :</p>` +
+        `<input type="text" id="playerName${playerIndex}" placeholder="Nom du joueur...">` +
+        `<input type="submit" value="OK" id="submitPlayer${playerIndex}" class="menuOkBtn">` +
+    '</div>'
+}
+
+const MENU_CONTROLS_PANEL = document.querySelector("#navigationMenuControls > .sliderWrapper > .slider");
+const MENU_CONTROLS_LINK = document.querySelector("#navigationMenuControls > p");
+
+const MENU_RULES_PANEL = document.querySelector("#navigationMenuRules > .sliderWrapper > .slider");
+const MENU_RULES_LINK = document.querySelector("#navigationMenuRules > p");
+
+const MENU_MUSIC_PANEL = document.querySelector("#navigationMenuMusic > .sliderWrapper > .slider");
+const MENU_MUSIC_LINK = document.querySelector("#navigationMenuMusic > p");
+
+const MENU_GAME_NEWGAME_PANEL = document.querySelector("#newGamePanel");
+
+const MENU_GAME_NEWGAME_PLAYERNUMBER_PANEL = document.querySelector("#playerNumberPanel");
+const MENU_GAME_NEWGAME_PLAYERNUMBER_NUMBER = document.querySelector('#playerNumberPanel > #playerNumber > .number');
+const MENU_GAME_NEWGAME_PLAYERNUMBER_PLUSBTN = document.querySelector('#playerNumberPanel > #playerNumber > .nextBtn');
+const MENU_GAME_NEWGAME_PLAYERNUMBER_MINUSBTN = document.querySelector('#playerNumberPanel > #playerNumber > .prevBtn');
+const MENU_GAME_NEWGAME_PLAYERNUMBER_LINKBTN = document.querySelector('#playerNumberPanel > .menuOkBtn');
+
+let MENU_GAME_NEWGAME_ADDPLAYER_PANEL = [];
+let MENU_GAME_NEWGAME_ADDPLAYER_NAME = [];
+let MENU_GAME_NEWGAME_ADDPLAYER_LINKBTN = [];
+
+for(let playerIndex = 1; playerIndex <= MAX_NUMBER_OF_PLAYER; playerIndex++) {
+    MENU_GAME_NEWGAME_ADDPLAYER_PANEL.push(document.querySelector(`#addPlayerPanel${playerIndex}`));
+    MENU_GAME_NEWGAME_ADDPLAYER_NAME.push(document.querySelector(`#playerName${playerIndex}`));
+    MENU_GAME_NEWGAME_ADDPLAYER_LINKBTN.push(document.querySelector(`#submitPlayer${playerIndex}`));
+}
+
+let MENUS = [];
+
 
 const USER_BID_COUNT_ELEM = document.querySelector('#userBidCount > p');
 const USER_BID_DICE_ELEM = document.querySelector("#userBidDice > img");
@@ -32,9 +90,7 @@ const MAIN_SECTION_PANEL = document.getElementById('sectionPanel');
 let currentPlayer = 1;
 let isPalifico = false;
 let isGamePause = true;
-let isMessageDisplay = false;
 let hasToResetPlayers = false;
-let messageType = 'normal'
 
 
 let PLAYER_BID_COUNT_ELEMS = [];
@@ -49,6 +105,122 @@ let eliminatedPlayers = [];
 let user;
 
 let totalPlayersDices = 0;
+
+let slideAnimationTimer = 400;
+
+
+class Menu {
+    constructor(name, panelElem, linkElems = [], openElems = [], closeElems = [], animation) {
+        this.name = name;
+        this.panelElem = panelElem;
+        this.linkElems = linkElems;
+        this.openElems = openElems;
+        this.closeElems = closeElems;
+        this.animation = animation;
+        this.panelElem.isDisplay = false;
+    }
+
+    updateMenu() {
+        if(this.animation === 'fromTop') {
+            if(this.panelElem.isDisplay) {
+                this.panelElem.style.animationName = 'slideInFromTop';
+                this.panelElem.style.animationDuration = `${slideAnimationTimer/1000}s`;
+                this.panelElem.style.transform = 'var(--panelPositionCenter)';
+            }
+            else if(!this.panelElem.isDisplay) {
+                this.panelElem.style.animationName = 'slideOutToTop';
+                this.panelElem.style.transform = 'var(--panelPositionTop)';
+            }
+        } else if(this.animation === 'fromRight') {
+            if(this.panelElem.isDisplay) {
+                this.panelElem.style.animationName = 'slideInFromRight';
+                this.panelElem.style.animationDuration = `${slideAnimationTimer/1000}s`;
+                this.panelElem.style.transform = 'var(--panelPositionCenter)';
+                this.panelElem.style.display = 'flex';
+            }
+            else if(!this.panelElem.isDisplay) {
+                this.panelElem.style.animationName = 'slideOutToLeft';
+                this.panelElem.style.transform = 'var(--panelPositionLeft)';
+                this.panelElem.style.display = 'none';
+            }
+        } else if(this.animation === 'none') {
+            if(this.panelElem.isDisplay) {
+                this.panelElem.style.transform = 'var(--panelPositionCenter)';
+                this.panelElem.style.display = 'flex';
+            }
+            else if(!this.panelElem.isDisplay) {
+                this.panelElem.style.transform = 'var(--panelPositionLeft)';
+                this.panelElem.style.display = 'none';
+            }
+        }
+    }
+
+}
+
+MENUS.push(new Menu(
+    "Game",
+    MENU_GAME_PANEL,
+    [MENU_GAME_LINK, MENU_GAME_LINK],
+    [MENU_GAME_PANEL, MENU_GAME_NEWGAME_PANEL],
+    [undefined, undefined],
+    'fromTop'));
+MENUS.push(new Menu(
+    "Controls",
+    MENU_CONTROLS_PANEL,
+    [MENU_CONTROLS_LINK],
+    [MENU_CONTROLS_PANEL],
+    [undefined],
+    'fromTop'));
+MENUS.push(new Menu(
+    "Rules",
+    MENU_RULES_PANEL,
+    [MENU_RULES_LINK],
+    [MENU_RULES_PANEL],
+    [undefined],
+    'fromTop'));
+MENUS.push(new Menu(
+    "Music",
+    MENU_MUSIC_PANEL,
+    [MENU_MUSIC_LINK],
+    [MENU_MUSIC_PANEL],
+    [undefined],
+    'fromTop'));
+MENUS.push(new Menu(
+    "NewGame",
+    MENU_GAME_NEWGAME_PANEL,
+    [MENU_GAME_NEWGAME_PANEL],
+    [MENU_GAME_NEWGAME_PLAYERNUMBER_PANEL],
+    [MENU_GAME_NEWGAME_PANEL],
+    'none'));
+MENUS.push(new Menu(
+    "PlayerNumber",
+    MENU_GAME_NEWGAME_PLAYERNUMBER_PANEL,
+    [MENU_GAME_NEWGAME_PLAYERNUMBER_LINKBTN],
+    [MENU_GAME_NEWGAME_ADDPLAYER_PANEL[0]],
+    [MENU_GAME_NEWGAME_PLAYERNUMBER_PANEL],
+    'fromRight'));
+
+
+for(let playerIndex = 1; playerIndex <= MAX_NUMBER_OF_PLAYER; playerIndex++) {
+    if(playerIndex < MAX_NUMBER_OF_PLAYER) {
+        MENUS.push(new Menu(
+            `AddPlayer${playerIndex}`,
+            MENU_GAME_NEWGAME_ADDPLAYER_PANEL[playerIndex - 1],
+            [MENU_GAME_NEWGAME_ADDPLAYER_LINKBTN[playerIndex - 1]],
+            [MENU_GAME_NEWGAME_ADDPLAYER_PANEL[playerIndex]],
+            [MENU_GAME_NEWGAME_ADDPLAYER_PANEL[playerIndex - 1]],
+            'fromRight'));
+    } else {
+        MENUS.push(new Menu(
+            `AddPlayer${playerIndex}`,
+            MENU_GAME_NEWGAME_ADDPLAYER_PANEL[playerIndex - 1],
+            [MENU_GAME_NEWGAME_ADDPLAYER_LINKBTN[playerIndex - 1]],
+            [undefined],
+            [MENU_GAME_PANEL],
+            'fromRight'));
+    }
+}
+    
 
 
 
@@ -108,7 +280,7 @@ class Player {
     }
 
     showPlayerDicesElem() {
-        for(let nDice in this.dices){
+        for(let nDice = 0; nDice < this.dices.length; nDice++){
             this.showPlayerDiceElem(this.dicesElem.children[nDice].children[0], this.dices[nDice]);
         }
     }
@@ -137,7 +309,7 @@ class Player {
     }
 
     randomizeDices() {
-        for(let nDice in this.dices){
+        for(let nDice = 0; nDice < this.dices.length; nDice++){
             this.dices[nDice] = this.randomizeDice();
         }
     }
@@ -463,57 +635,92 @@ function changeCurrentPlayer() {
     updatePlayers();
 }
 
+function setPanelDisplaySettings(panelElement, titleElement, textElement, background, animationTiming, animationDuration, animationName, title, message) {
+    if(panelElement == undefined) return;
+    if(background != undefined) panelElement.style.background = background;
+    if(animationTiming != undefined) panelElement.style.animationTimingFunction = animationTiming;
+    if(animationDuration != undefined) panelElement.style.animationDuration = animationDuration;
+    if(animationName != undefined) panelElement.style.animationName = animationName;
+    if(titleElement != undefined && title != undefined) titleElement.innerHTML = title;
+    if(textElement != undefined && message != undefined) textElement.innerHTML = message;
+}
+
 function displayMessage(title, message, type) {
-    messageType = type;
-    switch (messageType) {
+    MESSAGE_PANEL_ELEM.messageType = type;
+    switch (MESSAGE_PANEL_ELEM.messageType) {
         case "error":
-            MESSAGE_PANEL_ELEM.style.background = 'var(--errorMessageBgColor)';
-            MESSAGE_PANEL_ELEM.style.animationTimingFunction = "ease-out";
-            MESSAGE_PANEL_ELEM.style.animationDuration = '0.5s';
-            MESSAGE_PANEL_ELEM.style.animationName = 'slideIn';
-            setTimeout(function(){
-                MESSAGE_TITLE_ELEM.innerHTML = title;
-                MESSAGE_TEXT_ELEM.innerHTML = message;
-            }, 0);
+            setPanelDisplaySettings(
+                MESSAGE_PANEL_ELEM,
+                MESSAGE_TITLE_ELEM,
+                MESSAGE_TEXT_ELEM,
+                'var(--errorMessageBgColor)',
+                'ease-out',
+                `${slideAnimationTimer/1000}s`,
+                'slideInFromLeft',
+                title,
+                message);
             break;
         case "normal":
-            MESSAGE_PANEL_ELEM.style.background = 'var(--normalMessageBgColor)';
-            MESSAGE_PANEL_ELEM.style.animationTimingFunction = "ease-out";
-            MESSAGE_PANEL_ELEM.style.animationDuration = '0.5s';
-            MESSAGE_PANEL_ELEM.style.animationName = 'slideIn';
-            setTimeout(function(){
-                MESSAGE_TITLE_ELEM.innerHTML = title;
-                MESSAGE_TEXT_ELEM.innerHTML = message;
-            }, 0);
+            setPanelDisplaySettings(
+                MESSAGE_PANEL_ELEM,
+                MESSAGE_TITLE_ELEM,
+                MESSAGE_TEXT_ELEM,
+                'var(--normalMessageBgColor)',
+                'ease-out',
+                `${slideAnimationTimer/1000}s`,
+                'slideInFromLeft',
+                title,
+                message);
             break;
         case "end":
-            MESSAGE_PANEL_ELEM.style.animationTimingFunction = "ease-in-out";
-            MESSAGE_PANEL_ELEM.style.animationDuration = '1s';
-            MESSAGE_PANEL_ELEM.style.animationName = 'slideOutIn';
+            setPanelDisplaySettings(
+                MESSAGE_PANEL_ELEM,
+                MESSAGE_TITLE_ELEM,
+                MESSAGE_TEXT_ELEM,
+                undefined,
+                'ease-in',
+                `${slideAnimationTimer/1000}s`,
+                'slideOutToRight',
+                undefined,
+                undefined);
             setTimeout(function(){
-                MESSAGE_PANEL_ELEM.style.background = 'var(--endMessageBgColor)';
-                MESSAGE_TITLE_ELEM.innerHTML = title;
-                MESSAGE_TEXT_ELEM.innerHTML = message;
-            }, 500);
+                setPanelDisplaySettings(
+                    MESSAGE_PANEL_ELEM,
+                    MESSAGE_TITLE_ELEM,
+                    MESSAGE_TEXT_ELEM,
+                    'var(--endMessageBgColor)',
+                    'ease-out',
+                    `${slideAnimationTimer/1000}s`,
+                    'slideInFromLeft',
+                    title,
+                    message);
+            }, slideAnimationTimer);
             break;
         default:
             console.log('Type de message non reconnu');
             return; 
         }
     isGamePause = true;
-    isMessageDisplay = true;
+    MESSAGE_PANEL_ELEM.isMessageDisplay = true;
     
-    MESSAGE_PANEL_ELEM.style.left = '0px';
+    MESSAGE_PANEL_ELEM.style.transform = 'var(--panelPositionCenter)';
 }
 
 function stopDisplayMessage() {
-    if(!isMessageDisplay) return;
-    if(messageType === 'error' || messageType === 'normal') isGamePause = false;
-    isMessageDisplay = false;
-    MESSAGE_PANEL_ELEM.style.animationTimingFunction = "ease-in";
-    MESSAGE_PANEL_ELEM.style.animationDuration = '0.5s';
-    MESSAGE_PANEL_ELEM.style.animationName = 'slideOut';
-    MESSAGE_PANEL_ELEM.style.left = 'calc(var(--userPanelWidth) + 10px)';
+    if(!MESSAGE_PANEL_ELEM.isMessageDisplay) return;
+    if(MESSAGE_PANEL_ELEM.messageType === 'error' || MESSAGE_PANEL_ELEM.messageType === 'normal') isGamePause = false;
+    MESSAGE_PANEL_ELEM.isMessageDisplay = false;
+    setPanelDisplaySettings(
+        MESSAGE_PANEL_ELEM,
+        MESSAGE_TITLE_ELEM,
+        MESSAGE_TEXT_ELEM,
+        undefined,
+        'ease-in',
+        `${slideAnimationTimer/1000}s`,
+        'slideOutToRight',
+        undefined,
+        undefined);
+    MESSAGE_PANEL_ELEM.style.transform = 'var(--panelPositionLeft)';
     if(hasToResetPlayers) {
         hasToResetPlayers = false;
         resetPlayers();
@@ -529,6 +736,20 @@ function mainProgram() {
 mainProgram();
 
 
+
+
+
+function addPlayerNumber() {
+    let playerNumber = MENU_GAME_NEWGAME_PLAYERNUMBER_NUMBER.innerHTML;
+    if(playerNumber < MAX_NUMBER_OF_PLAYER) playerNumber++;
+    MENU_GAME_NEWGAME_PLAYERNUMBER_NUMBER.innerHTML = playerNumber;
+}
+
+function substractPlayerNumber() {
+    let playerNumber = MENU_GAME_NEWGAME_PLAYERNUMBER_NUMBER.innerHTML;
+    if(playerNumber > 2) playerNumber--;
+    MENU_GAME_NEWGAME_PLAYERNUMBER_NUMBER.innerHTML = playerNumber;
+}
 
 
 function addBidCount() {
@@ -584,6 +805,32 @@ function dudo() {
 }
 
 
+function initializeAddPlayerMenus() {
+    for(let menuIndex = 0; menuIndex < MENUS.length; menuIndex++){
+        if(MENUS[menuIndex].name.includes('AddPlayer')) {
+            if(menuIndex < MENUS.length - 1) {
+                MENUS[menuIndex].openElems = [MENUS[menuIndex + 1].panelElem];
+                MENUS[menuIndex].closeElems = [MENUS[menuIndex].panelElem];
+            } else {
+                MENUS[menuIndex].openElems = [undefined];
+                MENUS[menuIndex].closeElems = [MENUS[menuIndex].panelElem];
+            }
+        }
+    }
+}
+
+function updateAddPlayerMenus() {
+    initializeAddPlayerMenus();
+    let playerNumber = MENU_GAME_NEWGAME_PLAYERNUMBER_NUMBER.innerHTML;
+    for(let menu of MENUS){
+        if(menu.name === `AddPlayer${playerNumber}`) {
+            menu.openElems = [undefined];
+            menu.closeElems = [MENU_GAME_PANEL];
+        }
+    }
+}
+
+
 SHOW_BTN.addEventListener('mousedown', function() {
     if(isGamePause) return;
     user.showPlayerDicesElem();
@@ -607,6 +854,58 @@ DUDO_BTN.addEventListener('click',dudo);
 
 MESSAGE_OK_BTN.addEventListener('click',stopDisplayMessage);
 
+MENU_GAME_NEWGAME_PLAYERNUMBER_PLUSBTN.addEventListener('click',addPlayerNumber);
+MENU_GAME_NEWGAME_PLAYERNUMBER_MINUSBTN.addEventListener('click',substractPlayerNumber);
+MENU_GAME_NEWGAME_PLAYERNUMBER_LINKBTN.addEventListener('click',updateAddPlayerMenus);
+
+
+
+for(let menu of MENUS) {
+    menu.panelElem.isMouseOver = false;
+    menu.panelElem.addEventListener('mouseover',function(){
+        menu.panelElem.isMouseOver = true;
+    })
+    menu.panelElem.addEventListener('mouseout',function(){
+        menu.panelElem.isMouseOver = false;
+    })
+    for(let linkElem of menu.linkElems) {
+        linkElem.isMouseOver = false;
+        linkElem.addEventListener('mouseover',function(){
+            linkElem.isMouseOver = true;
+        })
+        linkElem.addEventListener('mouseout',function(){
+            linkElem.isMouseOver = false;
+        })
+    }
+}
+
+function updateMenus() {
+    for(let menu of MENUS) {
+        menu.updateMenu();
+    }
+}
+
+
+document.body.addEventListener('click',function(){
+    for(let menu of MENUS) {
+        menu.panelElem.isDisplay = false;
+    }
+
+    for(let menu of MENUS) {
+        if(menu.panelElem.isMouseOver) menu.panelElem.isDisplay = true;
+        for(let index = 0; index < menu.linkElems.length; index++) {
+            if(menu.linkElems[index].isMouseOver) {
+                if(menu.openElems[index] !== undefined) menu.openElems[index].isDisplay = true;
+                if(menu.closeElems[index] !== undefined) menu.closeElems[index].isDisplay = false;
+            }
+        }
+    }
+
+    updateMenus();
+});
+
+
+
 
 window.addEventListener("keydown", (event) => {
 	switch (event.key) {
@@ -628,7 +927,7 @@ window.addEventListener("keydown", (event) => {
             break;
         case "Enter":
             if(!isGamePause) makeBid();
-            else if(isMessageDisplay) stopDisplayMessage();
+            else if(MESSAGE_PANEL_ELEM.isMessageDisplay) stopDisplayMessage();
             event.preventDefault();
             break;
         case "Shift":
@@ -655,7 +954,7 @@ window.addEventListener("keyup", (event) => {
             SHOW_BTN.style.background='transparent';
             SHOW_BTN.style.color = 'white';
 	        SHOW_BTN.style.fontWeight = 'normal';
-            //! Pourquoi le #showBtn:hover ne fonctionne plus après ça ?
+            //! Pourquoi le #showBtn:hover ne fonctionne plus après ça ? ==> les styles imposés en javascript restent et sont prédominant sur le CSS, il faut trouver une solution.
             event.preventDefault();
             break;
         default:

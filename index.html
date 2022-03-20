@@ -12,10 +12,61 @@
 	<header>
 		<nav id="navigation">
 			<ul id="navigationMenus">
-				<li id="navigationMenuNewGame">Partie</li>
-				<li id="navigationMenuRestore">Commandes</li>
-				<li id="navigationMenuRules">Règles</li>
-				<li id="navigationMenuRules">Musique</li>
+				<li id="navigationMenuGame">
+					<p><span id="menuLink">Partie</span></p>
+					<div class="sliderWrapper">
+						<div class="slider">
+							<div id="newGamePanel" class="gameSubMenu"><p>Nouvelle Partie ?</p></div>
+							<div id="playerNumberPanel" class="gameSubMenu">
+								<p>Nombre de joueurs ?</p>
+								<p id="playerNumber" class="disableTextSelection">
+									<span class="prevBtn">></span>
+									<span class="number">2</span>
+									<span class="nextBtn">></span>
+								</p>
+								
+								<button class="menuOkBtn">OK</button>
+							</div>
+							<div id="addPlayerPanel" class="gameSubMenu">
+								<p>Joueur n°1 :</p>
+								<input type="text" id="playerName" placeholder="Nom du joueur...">
+								<input type="submit" value="OK" id="submitPlayer" class="menuOkBtn">
+							</div>
+						</div>
+					</div>
+				</li>
+				<li id="navigationMenuControls">
+					<p><span id="menuLink">Commandes</span></p>
+					<div class="sliderWrapper">
+						<div class="slider">
+							<ul>
+								<li><img src="Sources/Images/upArrowKey.png" alt="Touche flèche haut"> : Augmenter le nombre de dés</li>
+								<li><img src="Sources/Images/downArrowKey.png" alt="Touche flèche bas"> : Diminuer le nombre de dés</li>
+								<li><img src="Sources/Images/rightArrowKey.png" alt="Touche flèche droite"> : Augmenter la valeur du dé</li>
+								<li><img src="Sources/Images/leftArrowKey.png" alt="Touche flèche gauche"> : Diminuer la valeur du dé</li>
+								<li><img src="Sources/Images/enterKey.png" alt="Touche entrée"> : Enchérir</li>
+								<li><img src="Sources/Images/majKey.png" alt="Touche maj"> : Dudo</li>
+								<li><img src="Sources/Images/ctrlKey.png" alt="Touche ctrl"> : Montrer les dés</li>
+							</ul>
+						</div>
+					</div>
+				</li>
+				<li id="navigationMenuRules">
+					<p><span id="menuLink">Règles</span></p>
+					<div class="sliderWrapper">
+						<div class="slider">
+							Blablabla
+						</div>
+					</div>
+				</li>
+				<li id="navigationMenuMusic">
+					<p><span id="menuLink">Musique</span></p>
+					<div class="sliderWrapper">
+						<div class="slider">
+							Blablabla
+						</div>
+					</div>
+				</li>
 			</ul>
 		</nav>
 	</header>
@@ -113,11 +164,11 @@
 
 				<button id="bidBtn">Enchérir</button>
 				<button id="dudoBtn">Dudo</button>
-			</div>
-			<div id="messagePanel">
-				<h1 id="messagePanelTitle">Titre</h1>
-				<p id="message">Message.</p>
-				<button class="okBtn">OK</button>
+				<div id="messagePanel">
+					<h1 id="messagePanelTitle">Titre</h1>
+					<p id="message">Message.</p>
+					<button class="okBtn">OK</button>
+				</div>
 			</div>
 		</aside>
 
