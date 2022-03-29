@@ -201,6 +201,10 @@ header
 
 #navigationMenus .slider
 {
+	max-height: 75vh;
+	overflow-y: auto;
+	overflow-x: hidden;
+	text-align: justify;
 	background: var(--headerBgColor);
 	padding: 10px 20px;
 	font-size: 0.9em;
@@ -211,6 +215,20 @@ header
 	animation-timing-function: ease-out;
 	animation-iteration-count: 1;
 }
+
+#navigationMenus .slider::-webkit-scrollbar {
+	width: 8px;               /* width of the entire scrollbar */
+  }
+  
+  #navigationMenus .slider::-webkit-scrollbar-track {
+	background: none;        /* color of the tracking area */
+  }
+  
+  #navigationMenus .slider::-webkit-scrollbar-thumb {
+	border-radius: 20px;       /* roundness of the scroll thumb */
+	border: 3px solid var(--darkWhite);  /* creates padding around scroll thumb */
+  }
+  
 
 @keyframes slideInFromTop {
 	0% {

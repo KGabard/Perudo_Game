@@ -29,7 +29,7 @@
 							</div>
 							<div id="addPlayerPanel" class="gameSubMenu">
 								<p>Joueur n°1 :</p>
-								<input type="text" id="playerName" placeholder="Nom du joueur...">
+								<input type="text" id="playerName" placeholder="Nom du joueur..." autocomplete="off">
 								<input type="submit" value="OK" id="submitPlayer" class="menuOkBtn">
 							</div>
 						</div>
@@ -55,7 +55,47 @@
 					<p><span id="menuLink">Règles</span></p>
 					<div class="sliderWrapper">
 						<div class="slider">
-							Blablabla
+							<p>
+								I – Déroulement de la partie
+								<br>En début de partie tous les joueurs reçoivent cinq dès aléatoire. Seuls eux doivent connaître la valeur de leurs dès.
+								<br>Le premier joueur doit ensuite faire une proposition. Il doit annoncer une valeur de dé et un nombre de dés, principalement en fonction de son tirage. Théoriquement, il doit se rapprocher au mieux de la réalité, mais il peut aussi bluffer.
+								<br>C’est ensuite au joueur suivant de se prononcer. Il a deux choix :
+								<br>-	Dudo : Il peut estimer que l’affirmation du premier joueur est fausse et il doit annoncer « dudo » (je doute),
+								<br>-	Surenchérir : Il peut estimer que l’affirmation du premier joueur est plausible et il doit alors annoncer une surenchère.
+								<br>
+								<br>A) Dudo (je doute)
+								<br>Tous les joueurs révèlent leurs dès. On voit alors si la proposition du joueur précédent est exacte ou fausse.
+								<br>Si la proposition du joueur précédent est exacte (c’est-à-dire qu’il y a un nombre de dés de la valeur choisie supérieur ou égal à la proposition du joueur précédent), le joueur qui vient d’annoncer « dudo » a perdu la manche : il perd un de ses dés.
+								<br>Si la proposition du joueur précédent est fausse (c’est-à-dire qu’il y a un nombre de dés de la valeur choisie inférieur à la proposition du joueur précédent), c’est ce dernier qui a perdu la manche et il perd un de ses dés.
+								<br>Un joueur qui perd son dernier dé est éliminé de la partie.
+								<br>
+								<br>B) Surenchère
+								<br>Pour surenchérir, le joueur doit choisir une seule des deux options suivantes :
+								<br>-	Soit augmenter la valeur des dés
+								<br>-	Soit augmenter le nombre de dés
+								<br>Une fois qu’il a fait ce choix, il doit annoncer sa nouvelle proposition et c’est au joueur situé à sa gauche de parler. Ce dernier peut dire « dudo » ou surenchérir et ainsi de suite.
+								<br>Exemple : Le joueur précédent a annoncé « il y a au moins 5 dés de valeur 4 autour de cette table ». On peut annoncer « il y a eu moins 7 dés de valeur 4 autour de cette table » (dans ce cas, on a augmenté le nombre de dés). Ou, « il y a au moins 5 dés de valeur 5 autour de cette table » (dans ce cas, c’est la valeur des dés qui a été augmentée).
+								<br>
+								<br>II – Manche suivante
+								<br>Lorsqu’une manche se termine suite à un « dudo » et qu’un joueur a perdu un dé, on recommence une nouvelle manche mélangeant à nouveau les dés aléatoirement. Le joueur qui vient de perdre un dé est le nouveau premier joueur. S’il vient d’être éliminé de la partie, c’est le joueur suivant qui prend ce rôle.
+								<br>
+								<br>III – Cas particuliers
+								<br>A) Les dés « Paco »
+								<br>Les dés de valeur 1 sont spéciaux, ce sont des jokers. Tout d’abord, ils servent de joker lorsque les dés sont révélés suite à un « dudo ». Ils ont toujours la même valeur que celle de la dernière proposition exprimée.
+								<br>Exemple : on révèle les dés suite à un « dudo » annoncé par un joueur. La proposition précédente est « il y a au moins 9 dés de valeur 3 autour de cette table ». Pour savoir si cette affirmation est exacte ou fausse, on ajoute les paco aux dés qui indiquent 3.
+								<br>
+								<br>On peut proposer des paco. Normalement, on ne peut qu’augmenter la valeur des dés. Mais les paco sont spéciaux et on peut parfaitement annoncer une proposition qui concerne les paco : Toutefois, il faut au moins annoncer un nombre de paco égal à la moitié de la proposition précédente. On arrondit toujours à l’entier supérieur.
+								<br>Exemple : Le joueur précédent a annoncé « il y a eu moins 7 dés de valeur 4 autour de cette table ». Le joueur suivant peut dire « il y a au moins 4 dés paco autour de cette table ».
+								<br>
+								<br>Notez que c’est le seul moment du jeu où on peut réduire la valeur du dé proposé.
+								<br>
+								<br>Une fois qu’un joueur a annoncé un certain nombre de paco, le joueur suivant peut soit augmenter le nombre de paco proposés, soit changer la valeur des dés. Mais dans ce cas précis, il doit au moins proposer un nombre de dés égal à la proposition précédente plus un.
+								<br>
+								<br>Exemple : Si un joueur a annoncé 4 paco, le joueur suivant, s’il souhaite augmenter la valeur du dé, doit au moins annoncer 9 dés (le double de la proposition précédente plus 1).
+								<br>
+								<br>B) Etre « Palifico »
+								<br>Dès qu’un joueur n’a plus qu’un dé dans son gobelet, il est « palifico ». Tant qu’un joueur est « palifico » les paco ne sont pas considérés comme des jokers et aucun joueur ne peut modifier la valeur du dé proposé par le premier joueur.
+							</p>
 						</div>
 					</div>
 				</li>
@@ -73,8 +113,7 @@
 
 	<div id="main">
 		<section id="sectionPanel">
-
-			<div id="player1" class="playerPanel">
+			<!-- <div id="player1" class="playerPanel">
 				<div class="playerImage"><img src="Sources/Images/Cat.png" alt=""></div>
 				<h1 class="playerName">Player 1</h1>
 				<ul class="playerDices">
@@ -89,41 +128,7 @@
 					<p class="playerBidCount">99</p>
 					<div class="playerBidDice"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></div>
 				</div>
-			</div>
-			
-			<div id="player2" class="playerPanel">
-				<div class="playerImage"><img src="Sources/Images/Wolf.png" alt=""></div>
-				<h1 class="playerName">Player 2</h1>
-				<ul class="playerDices">
-					<li class="playerDice1"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></li>
-					<li class="playerDice2"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></li>
-					<li class="playerDice3"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></li>
-					<li class="playerDice4"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></li>
-					<li class="playerDice5"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></li>
-				</ul>
-				<h2 class="lastBidTitle">Enchère</h2>
-				<div class="playerBid">
-					<p class="playerBidCount">je suis 2eme</p>
-					<div class="playerBidDice"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></div>
-				</div>
-			</div>
-			
-			<div id="player3" class="playerPanel">
-				<div class="playerImage"><img src="Sources/Images/Tiger.png" alt=""></div>
-				<h1 class="playerName">Player 3</h1>
-				<ul class="playerDices">
-					<li class="playerDice1"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></li>
-					<li class="playerDice2"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></li>
-					<li class="playerDice3"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></li>
-					<li class="playerDice4"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></li>
-					<li class="playerDice5"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></li>
-				</ul>
-				<h2 class="lastBidTitle">Enchère</h2>
-				<div class="playerBid">
-					<p class="playerBidCount">99</p>
-					<div class="playerBidDice"><img src="Sources/Images/DiceFaceEmpty.png" class="dice" alt=""></div>
-				</div>
-			</div>
+			</div> -->
 		</section>
 
 			

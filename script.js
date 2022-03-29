@@ -1,7 +1,6 @@
-//TODO : Lancer une nouvelle partie a l'aide du menu "nouvelle partie"
-//TODO : Implémenter le menu "Règles"
+//! TODO : régler bug qui fait qu'on ne peux pas cliquer sur les boutons du panneau "votre main"
 //TODO : Implémenter le menu "Musique"
-//TODO régler le bug qui fait que le premier joueur à jouer peut faire "dudo" lorsqu'il a une enchère en cours.
+//TODO : régler le bug qui fait que le premier joueur à jouer peut faire "dudo" lorsqu'il a une enchère en cours.
 //TODO : Faire jouer des joueurs gérés par l'orinateur
 //TODO : Implémenter une IA pour l'ordinateur
 //TODO : Ajouter une ambiance sonore ? "Hang Drum Music for Focus with Binaural Beats, Focus Music, Handpan Study Music"
@@ -39,7 +38,7 @@ for(let playerIndex = 1; playerIndex <= MAX_NUMBER_OF_PLAYER; playerIndex++) {
     MENU_GAME_PANEL.innerHTML = MENU_GAME_PANEL.innerHTML +
     `<div id="addPlayerPanel${playerIndex}" class="gameSubMenu">` +
         `<p>Joueur n°${playerIndex} :</p>` +
-        `<input type="text" id="playerName${playerIndex}" placeholder="Nom du joueur...">` +
+        `<input type="text" id="playerName${playerIndex}" placeholder="Nom du joueur..." autocomplete="off">` +
         `<input type="submit" value="OK" id="submitPlayer${playerIndex}" class="menuOkBtn">` +
     '</div>'
 }
@@ -110,7 +109,7 @@ let slideAnimationTimer = 400;
 
 
 class Menu {
-    constructor(name, panelElem, linkElems = [], openElems = [], closeElems = [], animation) {
+    constructor(name, panelElem, linkElems = [],  openElems = [], closeElems = [], animation) {
         this.name = name;
         this.panelElem = panelElem;
         this.linkElems = linkElems;
@@ -153,6 +152,11 @@ class Menu {
                 this.panelElem.style.display = 'none';
             }
         }
+
+        for(let link of this.linkElems) {
+            if(link.isAvailable) link.style.opacity = 1;
+            if(!link.isAvailable) link.style.opacity = 0.5;
+        }
     }
 
 }
@@ -164,6 +168,8 @@ MENUS.push(new Menu(
     [MENU_GAME_PANEL, MENU_GAME_NEWGAME_PANEL],
     [undefined, undefined],
     'fromTop'));
+MENU_GAME_LINK.isAvailable = true;
+
 MENUS.push(new Menu(
     "Controls",
     MENU_CONTROLS_PANEL,
@@ -171,6 +177,8 @@ MENUS.push(new Menu(
     [MENU_CONTROLS_PANEL],
     [undefined],
     'fromTop'));
+MENU_CONTROLS_LINK.isAvailable = true;
+
 MENUS.push(new Menu(
     "Rules",
     MENU_RULES_PANEL,
@@ -178,6 +186,8 @@ MENUS.push(new Menu(
     [MENU_RULES_PANEL],
     [undefined],
     'fromTop'));
+MENU_RULES_LINK.isAvailable = true;
+
 MENUS.push(new Menu(
     "Music",
     MENU_MUSIC_PANEL,
@@ -185,6 +195,8 @@ MENUS.push(new Menu(
     [MENU_MUSIC_PANEL],
     [undefined],
     'fromTop'));
+MENU_MUSIC_LINK.isAvailable = true;
+
 MENUS.push(new Menu(
     "NewGame",
     MENU_GAME_NEWGAME_PANEL,
@@ -192,6 +204,8 @@ MENUS.push(new Menu(
     [MENU_GAME_NEWGAME_PLAYERNUMBER_PANEL],
     [MENU_GAME_NEWGAME_PANEL],
     'none'));
+MENU_GAME_NEWGAME_PANEL.isAvailable = true;
+
 MENUS.push(new Menu(
     "PlayerNumber",
     MENU_GAME_NEWGAME_PLAYERNUMBER_PANEL,
@@ -199,6 +213,7 @@ MENUS.push(new Menu(
     [MENU_GAME_NEWGAME_ADDPLAYER_PANEL[0]],
     [MENU_GAME_NEWGAME_PLAYERNUMBER_PANEL],
     'fromRight'));
+MENU_GAME_NEWGAME_PLAYERNUMBER_LINKBTN.isAvailable = true;
 
 
 for(let playerIndex = 1; playerIndex <= MAX_NUMBER_OF_PLAYER; playerIndex++) {
@@ -210,6 +225,7 @@ for(let playerIndex = 1; playerIndex <= MAX_NUMBER_OF_PLAYER; playerIndex++) {
             [MENU_GAME_NEWGAME_ADDPLAYER_PANEL[playerIndex]],
             [MENU_GAME_NEWGAME_ADDPLAYER_PANEL[playerIndex - 1]],
             'fromRight'));
+        MENU_GAME_NEWGAME_ADDPLAYER_LINKBTN[playerIndex - 1].isAvailable = false;
     } else {
         MENUS.push(new Menu(
             `AddPlayer${playerIndex}`,
@@ -218,6 +234,7 @@ for(let playerIndex = 1; playerIndex <= MAX_NUMBER_OF_PLAYER; playerIndex++) {
             [undefined],
             [MENU_GAME_PANEL],
             'fromRight'));
+        MENU_GAME_NEWGAME_ADDPLAYER_LINKBTN[playerIndex - 1].isAvailable = false;
     }
 }
     
@@ -490,6 +507,12 @@ function initializeTable(numberOfPlayers) {
 }
 
 function initializePlayerElems(numberOfPlayers) {
+    PLAYER_BID_COUNT_ELEMS = [];
+    PLAYER_BID_DICE_ELEMS = [];
+    PLAYER_DICES_ELEMS = [];
+    PLAYER_IMAGE_ELEMS = [];
+    PLAYER_NAME_ELEMS = [];
+    PLAYER_PANELS = [];
     for(let nPlayer = 0; nPlayer < numberOfPlayers; nPlayer++) {
         PLAYER_BID_COUNT_ELEMS.push(document.querySelector(`#player${nPlayer + 1} > div.playerBid > p.playerBidCount`));
         PLAYER_BID_DICE_ELEMS.push(document.querySelector(`#player${nPlayer + 1} > div.playerBid > div.playerBidDice > img`));
@@ -502,17 +525,18 @@ function initializePlayerElems(numberOfPlayers) {
 
 function initializePlayers(startPlayers = []) {
     user = new Player(undefined, undefined, USER_DICES_ELEM, USER_BID_COUNT_ELEM, USER_BID_DICE_ELEM, undefined, undefined, USER_PANEL);
+    players = [];
     for(let nPlayer = 0; nPlayer < startPlayers.length; nPlayer++) {
         players.push(new Player(startPlayers[nPlayer][0], startPlayers[nPlayer][1], PLAYER_DICES_ELEMS[nPlayer], PLAYER_BID_COUNT_ELEMS[nPlayer], PLAYER_BID_DICE_ELEMS[nPlayer], PLAYER_NAME_ELEMS[nPlayer], PLAYER_IMAGE_ELEMS[nPlayer], PLAYER_PANELS[nPlayer]));
     }
     randomizePlayersDices();
 }
 
-function initializeGame(startPlayers = []) {
+function initializeGame() {
     isGamePause = false;
-    initializeTable(startPlayers.length);
-    initializePlayerElems(startPlayers.length);
-    initializePlayers(startPlayers);
+    initializeTable(START_PLAYERS.length);
+    initializePlayerElems(START_PLAYERS.length);
+    initializePlayers(START_PLAYERS);
     currentPlayer = 0;
     setPlayerAttributeToUser(players[currentPlayer]);
     updatePlayers();
@@ -729,16 +753,6 @@ function stopDisplayMessage() {
 
 
 
-function mainProgram() {
-    initializeGame(START_PLAYERS);
-}
-
-mainProgram();
-
-
-
-
-
 function addPlayerNumber() {
     let playerNumber = MENU_GAME_NEWGAME_PLAYERNUMBER_NUMBER.innerHTML;
     if(playerNumber < MAX_NUMBER_OF_PLAYER) playerNumber++;
@@ -821,11 +835,17 @@ function initializeAddPlayerMenus() {
 
 function updateAddPlayerMenus() {
     initializeAddPlayerMenus();
-    let playerNumber = MENU_GAME_NEWGAME_PLAYERNUMBER_NUMBER.innerHTML;
+    let playerNumber = parseInt(MENU_GAME_NEWGAME_PLAYERNUMBER_NUMBER.innerHTML);
     for(let menu of MENUS){
         if(menu.name === `AddPlayer${playerNumber}`) {
             menu.openElems = [undefined];
             menu.closeElems = [MENU_GAME_PANEL];
+        }
+    }
+    for(let index = 0; index < MENU_GAME_NEWGAME_ADDPLAYER_PANEL.length; index++) {
+        MENU_GAME_NEWGAME_ADDPLAYER_LINKBTN[index].removeEventListener('click',initializeGame);
+        if(index + 1 === playerNumber) {
+            MENU_GAME_NEWGAME_ADDPLAYER_LINKBTN[index].addEventListener('click',initializeGame);
         }
     }
 }
@@ -859,23 +879,67 @@ MENU_GAME_NEWGAME_PLAYERNUMBER_MINUSBTN.addEventListener('click',substractPlayer
 MENU_GAME_NEWGAME_PLAYERNUMBER_LINKBTN.addEventListener('click',updateAddPlayerMenus);
 
 
+function resetStartPlayers() {
+    START_PLAYERS = [];
+}
+
+function addStartPlayer(playerIndex) {
+    let playerName = MENU_GAME_NEWGAME_ADDPLAYER_NAME[playerIndex - 1].value;
+    START_PLAYERS.push([playerName, playerIndex])
+}
+
+
+function checkNameValidity(playerIndex) {
+    let name = MENU_GAME_NEWGAME_ADDPLAYER_NAME[playerIndex - 1].value;
+    if(name.length >= 2 && name.length <= 10 ) {
+        MENU_GAME_NEWGAME_ADDPLAYER_LINKBTN[playerIndex - 1].isAvailable = true;
+    }
+    if(name.length < 2 || name.length > 10 ) {
+        MENU_GAME_NEWGAME_ADDPLAYER_LINKBTN[playerIndex - 1].isAvailable = false;
+    }
+}
+
+function alertNameValidity(playerIndex) {
+    let name = MENU_GAME_NEWGAME_ADDPLAYER_NAME[playerIndex - 1].value;
+    if(name.length < 2 || name.length > 10 ) {
+        alert('Erreur : Le nom du joueur doit avoir un nombre de caratères compris entre 2 et 10.')
+    }
+}
+
+for(let index = 0; index < MENU_GAME_NEWGAME_ADDPLAYER_NAME.length; index++) {
+    MENU_GAME_NEWGAME_ADDPLAYER_NAME[index].addEventListener('input',function(){
+        checkNameValidity(index + 1);
+        updateMenus();
+    });
+}
+
+for(let index = 0; index < MENU_GAME_NEWGAME_ADDPLAYER_NAME.length; index++) {
+    MENU_GAME_NEWGAME_ADDPLAYER_NAME[index].addEventListener('blur',function(){
+        alertNameValidity(index + 1);
+    });
+}
+
+
+
+
+
 
 for(let menu of MENUS) {
     menu.panelElem.isMouseOver = false;
     menu.panelElem.addEventListener('mouseover',function(){
         menu.panelElem.isMouseOver = true;
-    })
+    });
     menu.panelElem.addEventListener('mouseout',function(){
         menu.panelElem.isMouseOver = false;
-    })
+    });
     for(let linkElem of menu.linkElems) {
         linkElem.isMouseOver = false;
         linkElem.addEventListener('mouseover',function(){
             linkElem.isMouseOver = true;
-        })
+        });
         linkElem.addEventListener('mouseout',function(){
             linkElem.isMouseOver = false;
-        })
+        });
     }
 }
 
@@ -894,7 +958,7 @@ document.body.addEventListener('click',function(){
     for(let menu of MENUS) {
         if(menu.panelElem.isMouseOver) menu.panelElem.isDisplay = true;
         for(let index = 0; index < menu.linkElems.length; index++) {
-            if(menu.linkElems[index].isMouseOver) {
+            if(menu.linkElems[index].isMouseOver && menu.linkElems[index].isAvailable) {
                 if(menu.openElems[index] !== undefined) menu.openElems[index].isDisplay = true;
                 if(menu.closeElems[index] !== undefined) menu.closeElems[index].isDisplay = false;
             }
@@ -904,6 +968,14 @@ document.body.addEventListener('click',function(){
     updateMenus();
 });
 
+
+for(let index = 0; index < MENU_GAME_NEWGAME_ADDPLAYER_PANEL.length; index++) {
+    MENU_GAME_NEWGAME_ADDPLAYER_LINKBTN[index].addEventListener('click',function(){
+        if(!this.isAvailable) return;
+        if(index === 0 ) resetStartPlayers();
+        addStartPlayer(index + 1);
+    });
+};
 
 
 
