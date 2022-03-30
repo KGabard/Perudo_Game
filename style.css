@@ -376,6 +376,25 @@ header
 	transition: 0.2s;
 }
 
+#musicPlayer
+{
+	display: flex;
+	flex-direction: row;
+	gap: 0.5em;
+	height: 1.3em;
+	margin: 10px 0;
+}
+
+#musicPlayer img
+{
+	cursor: pointer;
+}
+
+#musicPlayer img:hover
+{
+	filter: drop-shadow(0px 0px 3px var(--lightWhite));
+}
+
 
 
 /* Main section */

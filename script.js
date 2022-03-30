@@ -1,9 +1,7 @@
-//TODO : Implémenter le menu "Musique"
-//TODO : régler le bug qui fait que le premier joueur à jouer peut faire "dudo" lorsqu'il a une enchère en cours.
 //TODO : Faire jouer des joueurs gérés par l'orinateur
 //TODO : Implémenter une IA pour l'ordinateur
-//TODO : Ajouter une ambiance sonore ? "Hang Drum Music for Focus with Binaural Beats, Focus Music, Handpan Study Music"
 //TODO : Gérer le responsive sur petit écran
+//TODO : Ajouter des effets sonores ?
 
 
 const MAX_NUMBER_OF_DICES = 5;
@@ -109,6 +107,54 @@ let totalPlayersDices = 0;
 
 let slideAnimationTimer = 400;
 
+
+const MUSIC_PLAY_BTN = document.querySelector('#playMusicBtn');
+const MUSIC_PAUSE_BTN = document.querySelector('#pauseMusicBtn');
+const MUSIC_PREV_BTN = document.querySelector('#prevMusicBtn');
+const MUSIC_NEXT_BTN = document.querySelector('#nextMusicBtn');
+const MUSIC_NAME = document.querySelector('#musicName');
+
+let MUSICS = []
+
+MUSICS.push(new Audio('Sources/Musics/panflute.wav'));
+MUSICS[0].name = 'Pan flute';
+MUSICS[0].loop = true;
+
+MUSICS.push(new Audio('Sources/Musics/hangdrum.wav'));
+MUSICS[1].name = 'Hang drum';
+MUSICS[1].loop = true;
+
+let currentMusic = 0;
+MUSIC_NAME.innerHTML = MUSICS[0].name
+
+MUSIC_PLAY_BTN.addEventListener('click',playMusic);
+MUSIC_PAUSE_BTN.addEventListener('click',pauseMusic);
+MUSIC_PREV_BTN.addEventListener('click',prevMusic);
+MUSIC_NEXT_BTN.addEventListener('click',nextMusic);
+
+function playMusic() {
+    MUSICS[currentMusic].play();
+}
+
+function pauseMusic() {
+    MUSICS[currentMusic].pause();
+}
+
+function prevMusic() {
+    MUSICS[currentMusic].pause();
+    currentMusic--;
+    if(currentMusic < 0) currentMusic = MUSICS.length - 1;
+    MUSICS[currentMusic].play();
+    MUSIC_NAME.innerHTML = MUSICS[currentMusic].name;
+}
+
+function nextMusic() {
+    MUSICS[currentMusic].pause();
+    currentMusic++;
+    if(currentMusic >= MUSICS.length) currentMusic = 0;
+    MUSICS[currentMusic].play();
+    MUSIC_NAME.innerHTML = MUSICS[currentMusic].name;
+}
 
 class Menu {
     constructor(name, panelElem, linkElems = [],  openElems = [], closeElems = [], animation) {
@@ -809,8 +855,11 @@ function makeBid() {
 
 function dudo() {
     if(isGamePause) return;
-    if(isNaN(players[currentPlayer].bidCount) || isNaN(players[currentPlayer].bidDice)) {
-        displayMessage("Dudo impossible !", "L'enchère en cours est incomplète.", 'error');
+    let previousPlayer = currentPlayer - 1;
+    if(previousPlayer < 0) previousPlayer = players.length - 1;
+    if(previousPlayer >= players.length) previousPlayer = 0;
+    if(isNaN(players[previousPlayer].bidCount) || isNaN(players[previousPlayer].bidDice)) {
+        displayMessage("Dudo impossible !", "Le joueur précédent n'a pas enchéri.", 'error');
         return;
     }
     for(let player of players) {
@@ -879,13 +928,6 @@ MESSAGE_OK_BTN.addEventListener('click',stopDisplayMessage);
 MENU_GAME_NEWGAME_PLAYERNUMBER_PLUSBTN.addEventListener('click',addPlayerNumber);
 MENU_GAME_NEWGAME_PLAYERNUMBER_MINUSBTN.addEventListener('click',substractPlayerNumber);
 MENU_GAME_NEWGAME_PLAYERNUMBER_LINKBTN.addEventListener('click',updateAddPlayerMenus);
-
-
-BID_BTN.addEventListener('click',function() {
-    alert('enchere click');
-});
-
-
 
 function resetStartPlayers() {
     START_PLAYERS = [];
