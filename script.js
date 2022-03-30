@@ -1,4 +1,3 @@
-//! TODO : régler bug qui fait qu'on ne peux pas cliquer sur les boutons du panneau "votre main"
 //TODO : Implémenter le menu "Musique"
 //TODO : régler le bug qui fait que le premier joueur à jouer peut faire "dudo" lorsqu'il a une enchère en cours.
 //TODO : Faire jouer des joueurs gérés par l'orinateur
@@ -51,6 +50,9 @@ const MENU_RULES_LINK = document.querySelector("#navigationMenuRules > p");
 
 const MENU_MUSIC_PANEL = document.querySelector("#navigationMenuMusic > .sliderWrapper > .slider");
 const MENU_MUSIC_LINK = document.querySelector("#navigationMenuMusic > p");
+
+const MENUS_SLIDERS = document.querySelectorAll("#navigationMenus .slider");
+const MENUS_SLIDER_WRAPPERS = document.querySelectorAll("#navigationMenus .sliderWrapper");
 
 const MENU_GAME_NEWGAME_PANEL = document.querySelector("#newGamePanel");
 
@@ -879,6 +881,12 @@ MENU_GAME_NEWGAME_PLAYERNUMBER_MINUSBTN.addEventListener('click',substractPlayer
 MENU_GAME_NEWGAME_PLAYERNUMBER_LINKBTN.addEventListener('click',updateAddPlayerMenus);
 
 
+BID_BTN.addEventListener('click',function() {
+    alert('enchere click');
+});
+
+
+
 function resetStartPlayers() {
     START_PLAYERS = [];
 }
@@ -922,8 +930,6 @@ for(let index = 0; index < MENU_GAME_NEWGAME_ADDPLAYER_NAME.length; index++) {
 
 
 
-
-
 for(let menu of MENUS) {
     menu.panelElem.isMouseOver = false;
     menu.panelElem.addEventListener('mouseover',function(){
@@ -946,6 +952,10 @@ for(let menu of MENUS) {
 function updateMenus() {
     for(let menu of MENUS) {
         menu.updateMenu();
+    }
+    for(let index = 0; index < MENUS_SLIDERS.length; index++) {
+        if(MENUS_SLIDERS[index].isDisplay) MENUS_SLIDER_WRAPPERS[index].style.display = "block"
+        if(!MENUS_SLIDERS[index].isDisplay) setTimeout(function(){MENUS_SLIDER_WRAPPERS[index].style.display = "none"}, slideAnimationTimer);
     }
 }
 
