@@ -376,6 +376,23 @@ header
 	transition: 0.2s;
 }
 
+
+.computerPlayerWrapper
+{
+	display: flex;
+	flex-direction: row;
+	justify-content: end;
+	align-items: center;
+	gap: 10px;
+	font-size: 0.9em;
+}
+
+#computerPlayer input:checked
+{
+	border: 3px solid red;
+}
+
+
 #musicPlayer
 {
 	display: flex;

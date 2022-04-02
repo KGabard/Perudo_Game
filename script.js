@@ -1,12 +1,11 @@
-//TODO : Faire jouer des joueurs gérés par l'orinateur
-//TODO : Implémenter une IA pour l'ordinateur
 //TODO : Gérer le responsive sur petit écran
 //TODO : Ajouter des effets sonores ?
 
 
 const MAX_NUMBER_OF_DICES = 5;
 const MAX_NUMBER_OF_PLAYER = 10;
-let START_PLAYERS = [['Anaïs', 6], ['Kevin', 1], ['Zora', 3]];
+let COMPUTER_SPEED = 1;
+let START_PLAYERS = [];
 
 const MINUS_BID_COUNT_BTN = document.getElementById('minusBidCount');
 const PLUS_BID_COUNT_BTN = document.getElementById('plusBidCount');
@@ -36,6 +35,10 @@ for(let playerIndex = 1; playerIndex <= MAX_NUMBER_OF_PLAYER; playerIndex++) {
     `<div id="addPlayerPanel${playerIndex}" class="gameSubMenu">` +
         `<p>Joueur n°${playerIndex} :</p>` +
         `<input type="text" id="playerName${playerIndex}" placeholder="Nom du joueur..." autocomplete="off">` +
+        `<div class="computerPlayerWrapper">` +
+            `<p>Ordinateur ?</p>` +
+            `<input type="checkbox" id="computerPlayer${playerIndex}">` +
+        `</div>` +
         `<input type="submit" value="OK" id="submitPlayer${playerIndex}" class="menuOkBtn">` +
     '</div>'
 }
@@ -63,11 +66,13 @@ const MENU_GAME_NEWGAME_PLAYERNUMBER_LINKBTN = document.querySelector('#playerNu
 let MENU_GAME_NEWGAME_ADDPLAYER_PANEL = [];
 let MENU_GAME_NEWGAME_ADDPLAYER_NAME = [];
 let MENU_GAME_NEWGAME_ADDPLAYER_LINKBTN = [];
+let MENU_GAME_NEWGAME_ADDPLAYER_COMPUTERCHECK = [];
 
 for(let playerIndex = 1; playerIndex <= MAX_NUMBER_OF_PLAYER; playerIndex++) {
     MENU_GAME_NEWGAME_ADDPLAYER_PANEL.push(document.querySelector(`#addPlayerPanel${playerIndex}`));
     MENU_GAME_NEWGAME_ADDPLAYER_NAME.push(document.querySelector(`#playerName${playerIndex}`));
     MENU_GAME_NEWGAME_ADDPLAYER_LINKBTN.push(document.querySelector(`#submitPlayer${playerIndex}`));
+    MENU_GAME_NEWGAME_ADDPLAYER_COMPUTERCHECK.push(document.querySelector(`#computerPlayer${playerIndex}`));
 }
 
 let MENUS = [];
@@ -290,12 +295,13 @@ for(let playerIndex = 1; playerIndex <= MAX_NUMBER_OF_PLAYER; playerIndex++) {
 
 
 class Player {
-    constructor(name, imageIndex, dicesElem, bidCountElem, bidDiceElem, nameElem, imageElem, panelElem) {
+    constructor(name, imageIndex, isComputer, dicesElem, bidCountElem, bidDiceElem, nameElem, imageElem, panelElem) {
         this.dices = [0, 0, 0, 0, 0];
         this.bidCount = undefined;
         this.bidDice = undefined;
         this.name = name;
         this.imageIndex = imageIndex;
+        this.isComputer = isComputer;
         this.dicesElem = dicesElem;
         this.bidCountElem = bidCountElem;
         this.bidDiceElem = bidDiceElem;
@@ -509,6 +515,8 @@ class Player {
 
 function setPlayerAttributeToUser(player) {
     user.dices = player.dices;
+    user.bidCount = player.bidCount;
+    user.bidDice = player.bidDice;
 }
 
 function setUserAttributeToPlayer(player) {
@@ -572,22 +580,25 @@ function initializePlayerElems(numberOfPlayers) {
 }
 
 function initializePlayers(startPlayers = []) {
-    user = new Player(undefined, undefined, USER_DICES_ELEM, USER_BID_COUNT_ELEM, USER_BID_DICE_ELEM, undefined, undefined, USER_PANEL);
+    user = new Player(undefined, undefined, false, USER_DICES_ELEM, USER_BID_COUNT_ELEM, USER_BID_DICE_ELEM, undefined, undefined, USER_PANEL);
+    eliminatedPlayers = [];
     players = [];
     for(let nPlayer = 0; nPlayer < startPlayers.length; nPlayer++) {
-        players.push(new Player(startPlayers[nPlayer][0], startPlayers[nPlayer][1], PLAYER_DICES_ELEMS[nPlayer], PLAYER_BID_COUNT_ELEMS[nPlayer], PLAYER_BID_DICE_ELEMS[nPlayer], PLAYER_NAME_ELEMS[nPlayer], PLAYER_IMAGE_ELEMS[nPlayer], PLAYER_PANELS[nPlayer]));
+        players.push(new Player(startPlayers[nPlayer][0], startPlayers[nPlayer][1], startPlayers[nPlayer][2], PLAYER_DICES_ELEMS[nPlayer], PLAYER_BID_COUNT_ELEMS[nPlayer], PLAYER_BID_DICE_ELEMS[nPlayer], PLAYER_NAME_ELEMS[nPlayer], PLAYER_IMAGE_ELEMS[nPlayer], PLAYER_PANELS[nPlayer]));
     }
     randomizePlayersDices();
 }
 
 function initializeGame() {
+    let playerNumber = parseInt(MENU_GAME_NEWGAME_PLAYERNUMBER_NUMBER.innerHTML);
+    if(!MENU_GAME_NEWGAME_ADDPLAYER_LINKBTN[playerNumber - 1].isAvailable) return;
     isGamePause = false;
     initializeTable(START_PLAYERS.length);
     initializePlayerElems(START_PLAYERS.length);
     initializePlayers(START_PLAYERS);
     currentPlayer = 0;
-    setPlayerAttributeToUser(players[currentPlayer]);
     updatePlayers();
+    isComputerPlaying();
 }
 
 function randomizePlayersDices() {
@@ -608,6 +619,7 @@ function resetPlayers() {
     randomizePlayersDices();
     resetPlayersBid();
     updatePlayers();
+    isComputerPlaying();
 }
 
 function checkBid() {
@@ -681,6 +693,7 @@ function updatePlayers() {
         if(players[playerIndex].dices.length === 0 && !players[playerIndex].isEliminated) eliminatePlayer(playerIndex);
     }
     players[currentPlayer].isHighLighted = true;
+    setPlayerAttributeToUser(players[currentPlayer]);
     
     if(isPalifico) PALIFICO_SIGN.style.display = 'flex';
     else PALIFICO_SIGN.style.display = 'none';
@@ -697,14 +710,17 @@ function updatePlayers() {
     }
 }
 
+
 function changeCurrentPlayer() {
+    let lastPlayer = currentPlayer;
     currentPlayer++;
     if(currentPlayer > players.length - 1) currentPlayer = 0;
-    setPlayerAttributeToUser(players[currentPlayer]);
-    setUserAttributeToPlayer(players[currentPlayer]);
+    players[currentPlayer].bidCount = players[lastPlayer].bidCount;
+    players[currentPlayer].bidDice = players[lastPlayer].bidDice;
     players[currentPlayer].panelElem.scrollIntoView({behavior: "smooth", block: "center"});
 
     updatePlayers();
+    isComputerPlaying();
 }
 
 function setPanelDisplaySettings(panelElement, titleElement, textElement, background, animationTiming, animationDuration, animationName, title, message) {
@@ -832,8 +848,8 @@ function substractBidCount() {
 
 function addBidDice() {
     if(isGamePause) return;
-    if(isNaN(user.bidDice)) user.bidDice = 1;
-    else if(user.bidDice + 1 <= 6) user.bidDice++;
+    if(isNaN(user.bidDice) || user.bidDice >= 6) user.bidDice = 1;
+    else user.bidDice++;
     setUserAttributeToPlayer(players[currentPlayer]);
     updatePlayers();
 }
@@ -841,7 +857,8 @@ function addBidDice() {
 function substractBidDice() {
     if(isGamePause) return;
     if(isNaN(user.bidDice)) user.bidDice = 1;
-    else if(user.bidDice - 1 >= 1) user.bidDice--;
+    else if(user.bidDice <= 1) user.bidDice = 6;
+    else user.bidDice--;
     setUserAttributeToPlayer(players[currentPlayer]);
     updatePlayers();
 }
@@ -935,7 +952,8 @@ function resetStartPlayers() {
 
 function addStartPlayer(playerIndex) {
     let playerName = MENU_GAME_NEWGAME_ADDPLAYER_NAME[playerIndex - 1].value;
-    START_PLAYERS.push([playerName, playerIndex])
+    let isComputer = MENU_GAME_NEWGAME_ADDPLAYER_COMPUTERCHECK[playerIndex - 1].checked;
+    START_PLAYERS.push([playerName, playerIndex, isComputer]);
 }
 
 
@@ -1088,3 +1106,140 @@ window.addEventListener("keyup", (event) => {
 
 
 console.log('hello');
+
+
+// MATH ET PROBA :
+// En langage mathématique, on dirait que le coefficients binomial Cb{n,k} (que l’on prononce « k parmi n » ou « combinaison de k parmi n »), donne donc le nombre de parties de k éléments dans un ensemble total de n éléments, avec k ≤ n, (ce qui revient à dire que le coefficient binomial est le nombre de chemins conduisant à k succès).
+// Cb{n,k} = n! / ((n-k)! * k!) avec !x -> factorial de x
+// Probabilité de k succès pour n tirages dont les issus sont k (avec la probabilité Pk) et nonk (avec la probabilité Pnonk) :
+// P = Cb{n,k} * Pk^k * Pnonk^(n-k)
+
+
+function factorial(x) {
+    let result = 1
+    for(let i = 1; i <= x; i++) {
+        result *= i;
+    }
+    return result;
+}
+
+function binomialCoefficient(n,k) { //Nombre de k succès parmi n tirages
+    return factorial(n) / (factorial(n-k) * factorial(k));
+}
+
+function Probability_k_among_n(n,k,probaK,probaNonK) { //Probabilité de k succès parmi n tirages
+    return binomialCoefficient(n,k) * Math.pow(probaK,k) * Math.pow(probaNonK,n-k);
+}
+
+function bidProbability(bidCount,bidDice,dices = []) {
+    let probability = 0;
+    let totalDices = totalPlayersDices;
+    let nbOfUnknowDices = totalDices - dices.length;
+    let minNbOfBidDiceAmongUnknowDices = bidCount;
+    let winProbability = 0;
+    let looseProbability = 0;
+
+    if(isPalifico || bidDice === 1) {
+        for(let dice of dices) {
+            if(dice === bidDice) minNbOfBidDiceAmongUnknowDices--;
+        }
+        winProbability = 1/6;
+        looseProbability = 5/6;
+    } else {
+        for(let dice of dices) {
+            if(dice === bidDice || dice === 1) minNbOfBidDiceAmongUnknowDices--;
+        }
+        winProbability = 2/6;
+        looseProbability = 4/6;
+    }
+
+    if(minNbOfBidDiceAmongUnknowDices <= 0) return 1;
+
+    for(let nbOfWin = minNbOfBidDiceAmongUnknowDices; nbOfWin <= nbOfUnknowDices; nbOfWin++) {
+        probability += Probability_k_among_n(nbOfUnknowDices,nbOfWin,winProbability,looseProbability)
+    }
+    return probability;
+}
+
+
+// AI SECTION :
+
+function isComputerPlaying() {
+    if(players[currentPlayer].isComputer) {
+        isGamePause = true;
+        setTimeout(() => {
+            computerPlay();
+        }, (Math.random()*2000 + 1000) * COMPUTER_SPEED);
+    }
+}
+
+
+function computerPlay() {
+    isGamePause = false;
+    let lastPlayer = currentPlayer - 1;
+    if(lastPlayer < 0) lastPlayer = players.length - 1;
+    if(lastPlayer >= players.length) lastPlayer = 0;
+
+    let lastBidDice = players[lastPlayer].bidDice;
+    let lastBidCount = players[lastPlayer].bidCount;
+
+    if(lastBidDice === undefined) {
+        let currentBidProbability = 0;
+        for(tempBidDice = 1; tempBidDice <= 6; tempBidDice++) {
+            let tempBidCount = 0;
+            let tempBidProbability = 0;
+            tempBidCount = 1;
+            tempBidProbability = bidProbability(tempBidCount,tempBidDice,players[currentPlayer].dices);
+
+            if(tempBidDice === 1) {
+                currentBidProbability = tempBidProbability;
+                players[currentPlayer].bidCount = tempBidCount;
+                players[currentPlayer].bidDice = tempBidDice;
+            }
+
+            if(tempBidProbability >= currentBidProbability) {
+                if(Math.random() > 0.5) {       //Permet d'introduire un peu d'aléatoire sinon il est aisé de deviné au moins un dé de l'ordinateur
+                    currentBidProbability = tempBidProbability;
+                    players[currentPlayer].bidCount = tempBidCount;
+                    players[currentPlayer].bidDice = tempBidDice;
+                }
+            }
+        }
+
+        makeBid();
+
+    } else {
+        let currentBidProbability = 0;
+        if(isPalifico) {
+            players[currentPlayer].bidCount = lastBidCount + 1;
+            players[currentPlayer].bidDice = lastBidDice;
+            currentBidProbability = bidProbability(players[currentPlayer].bidCount,players[currentPlayer].bidDice,players[currentPlayer].dices);
+        }
+        else {
+            for(tempBidDice = 1; tempBidDice <= 6; tempBidDice++) {
+                let tempBidCount = 0;
+                let tempBidProbability = 0;
+                tempBidCount = lastBidCount;
+                if(tempBidDice === lastBidDice) tempBidCount = lastBidCount + 1;
+                else {
+                    if(tempBidDice === 1 && lastBidDice !== 1) tempBidCount = Math.ceil(lastBidCount / 2);
+                    if(tempBidDice !== 1 && lastBidDice === 1) tempBidCount = lastBidCount * 2 + 1;
+                }
+                tempBidProbability = bidProbability(tempBidCount,tempBidDice,players[currentPlayer].dices);
+    
+                if(tempBidProbability > currentBidProbability) {
+                    if(tempBidDice === 1 || tempBidDice >= lastBidDice) {
+                        currentBidProbability = tempBidProbability;
+                        players[currentPlayer].bidCount = tempBidCount;
+                        players[currentPlayer].bidDice = tempBidDice;
+                    }
+                }
+            }
+        }
+        
+        let dudoProbability = 1 - bidProbability(lastBidCount,lastBidDice,players[currentPlayer].dices);
+        
+        if(dudoProbability > currentBidProbability) dudo();
+        else makeBid();
+    }
+}
